@@ -14,6 +14,7 @@ theta = 2.0
 *
 
 @ concentration = E
+population = wake
 C = 0.9
 gamma = 5.0
 tau = 25E3
@@ -30,6 +31,7 @@ pop_ext = wake
 *
 
 @ concentration = G
+population = NREM
 C = 1E-3
 gamma = 4.0
 tau = 10E3
@@ -47,6 +49,7 @@ pop_ext = NREM REM wake
 *
 
 @ concentration = A
+population = REM
 C = 1E-3
 gamma = 3.0
 tau = 10E3
