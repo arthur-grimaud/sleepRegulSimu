@@ -1,6 +1,15 @@
 import numpy as np
 
 class NeuronalPopulation :
+    #Constructor **Args**
+    # F : Firing rate initial value
+    # C : Initial concentration of the neuronal population associated neurotransmitter
+    # ...
+    # beta : could be either a constant or a list (decription à completer)
+    # ...
+    # g_NT_pop_list : list of weights of the synaptic response to a neurottransmitter Concentration
+    # pop_list : Populations associated to the weight list declared in "g_NT_pop_list" . Have to be a list of strings corresponding to the name of a NeuronalPopulation instance.
+    # (note, g_NT_pop_list and pop_list have to be the same length)
     def __init__(self, F, C, F_max, beta, alpha, gamma, tau_pop, tau_NT, g_NT_pop_list, pop_list):
         #initial conditions
         self.F = F
@@ -49,7 +58,6 @@ class HomeostaticSleepDrive:
         self.tau_hs = tau_hs
 
     def getH(self):
-        print(self.heaviside(eval(self.f_X).F-self.theta_X))
         return (self.H_max-self.h)/self.tau_hw*self.heaviside(eval(self.f_X).F-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-eval(self.f_X).F)
 
     def heaviside(self,X):
@@ -60,7 +68,7 @@ class HomeostaticSleepDrive:
 
 
 
-#instanciation of the neuronal population and homeostatic sleep drive
+#instanciation of the neuronal population and homeostatic sleep drive objects
 wake = NeuronalPopulation(6.0, 0.9, 6.5, -0.23, 0.5, 5.0, 25, 25E3, [-2.0, 1.2], ["nrem", "rem"] )
 nrem = NeuronalPopulation(1E-3, 1E-3, 5.0, [2.5,"homeo"], 0.25, 4.0, 25, 10E3, [-2.0], ["wake"])
 rem = NeuronalPopulation(1E-3, 1E-3, 5.0, -0.6, 0.25, 3.0, 1, 10E3, [-1.3, 1.5, -2.1], ["nrem", "rem", "wake"])
@@ -74,10 +82,20 @@ T = 30
 res = 1E4
 dt 	= 1E3/res
 
+#temporary: (storage)
+wakeF = []
+nremF = []
+remF = []
+
+wakeC = []
+nremC = []
+remC = []
+
+hL = []
+
 
 while (t < T*res):
     t+=1
-    print(homeo.h)
     wake.F = wake.F+dt*wake.getFR()
     nrem.F = nrem.F+dt*nrem.getFR()
     rem.F = rem.F+dt*rem.getFR()
@@ -87,3 +105,12 @@ while (t < T*res):
     rem.C = rem.C+dt*rem.getC()
 
     homeo.h = homeo.h+dt*homeo.getH()
+
+    wakeF.append(wake.F)
+    nremF.append(nrem.F)
+    remF.append(rem.F)
+    wakeC.append(wake.C)
+    nremC.append(nrem.C)
+    remC.append(rem.C)
+
+    hL.append(homeo.h)
