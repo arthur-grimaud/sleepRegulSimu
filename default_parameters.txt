@@ -10,7 +10,6 @@ beta = -0.23
 tau = 25
 g = -2.0 1.2
 pop_ext = NREM REM
-theta = 2.0
 *
 
 @ concentration = E
@@ -57,11 +56,13 @@ tau = 10E3
 
 // lines beginning with an "+" corresponds to the instanciation of a cycle
 
-+ cycle = homeostatique
++ cycle = homeostatic
 h = 0.5
 H_max = 1.0
 tau_w = 600
 tau_s = 380
+X = wake
+theta = 2.0
 +
 
 // lines beginning with an "#" corresponds to the simulation parameters
