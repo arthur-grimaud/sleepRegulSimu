@@ -47,7 +47,13 @@ def read_parameters() :
                 check_sim = 0
             
             elif check_pop == 1 and line[0] != "*" :
-                populations[currentPopulation][line[0]] = line[2]
+                if line[0] == "g" or line[0] == "pop_ext" :
+                    g_pop = []
+                    for i in range(2,len(line)) :
+                        g_pop.append(line[i])
+                    populations[currentPopulation][line[0]] = g_pop
+                else :
+                    populations[currentPopulation][line[0]] = line[2]
             elif check_conc == 1 and line[0] != "@" :
                 concentrations[currentConcentration][line[0]] = line[2]
             elif check_cycle == 1 and line[0] != "+" :
@@ -57,12 +63,6 @@ def read_parameters() :
 
     fic.close()
     return populations,concentrations,cycles,simulation_parameters
-
-# print("populations :")
-# for pop in populations :
-#     print ('\t',pop,":")
-#     for param in populations[pop] :
-#         print("\t\t",param,populations[pop][param]) 
 
 
 def write_parameters(name_file,populations,concentrations,cycles,simulation_parameters) :
@@ -74,7 +74,13 @@ def write_parameters(name_file,populations,concentrations,cycles,simulation_para
     for myPop in populations :
         fic.write("* population = "+myPop+"\n")
         for parameter in populations[myPop] :
-            fic.write(parameter+" = "+populations[myPop][parameter]+"\n")
+            if parameter == "g" or parameter == "pop_ext" :
+                fic.write(parameter+" =")
+                for i in range(len(populations[myPop][parameter])) :
+                    fic.write(" "+populations[myPop][parameter][i])
+                fic.write("\n")
+            else : 
+                fic.write(parameter+" = "+populations[myPop][parameter]+"\n")
         fic.write("*\n\n")
 
     for myConcentration in concentrations : 
@@ -97,12 +103,87 @@ def write_parameters(name_file,populations,concentrations,cycles,simulation_para
     fic.close()
 
 
-# def setClasses() 
 
+class NeuronalPopulation :
+    # creation of the class NeuronalPopulation using the dictionnaries populations and concentrations 
+    
+    def __init__(self,myPopulation,myConcentration) :
+        #initial conditions
+        self.F = myPopulation["f"]
+        self.C  = myConcentration["C"]
+        #Firing rate parameters
+        self.F_max = myPopulation["F_max"]
+        self.beta = myPopulation["beta"]
+        self.alpha = myPopulation["alpha"]
+        self.tau_pop = myPopulation["tau"]
+        #parameters for getI method # both should be lists
+        self.g_NT_pop_list = myPopulation["g"]
+        self.pop_list = myPopulation["pop_ext"]
 
-# création de classes pour chaque objet 
+        #Neurotransmitter Concentration parameters
+        self.gamma = myConcentration["gamma"]
+        self.tau_NT = myConcentration["tau"]
+
+        print('Object created')
+
+    def getFR(self): #differential equation of the firing rate
+        return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
+
+    def getI(self):
+        result = 0
+        for i in range((len(self.pop_list))):
+            result += self.g_NT_pop_list[i] * eval(self.pop_list[i]).C
+        return result
+
+    def getC(self): #differential equation of the neurotransmitter concentration released by the population
+        return np.tanh((self.F/self.gamma) - self.C)/self.tau_NT
+
+    def getBeta(self): #used to handle the homeostatic sleep drive
+        if isinstance (self.beta , list):
+            return self.beta[0]*eval(self.beta[1]).h
+        else:
+            return self.beta
+
+class HomeostaticSleepDrive:
+    # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ?? 
+    
+    def __init__(self, myCycle):
+
+        self.h = myCycle["h"]
+        self.H_max = myCycle["H_max"]
+        self.tau_hw = myCycle["tau_w"]
+        self.tau_hs = myCycle["tau_s"]
+        self.f_X = myCycle["X"]
+        self.theta_X = myCycle["theta"]
+
+        print('Object created')
+
+    def getH(self):
+        print(self.heaviside(eval(self.f_X).F-self.theta_X))
+        return (self.H_max-self.h)/self.tau_hw*self.heaviside(eval(self.f_X).F-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-eval(self.f_X).F)
+
+    def heaviside(self,X):
+        if(X >= 0):
+            return 1
+        else:
+            return 0
+
+def setClasses() :
+    wake = NeuronalPopulation(populations["wake"],concentrations["E"])
+    nrem = NeuronalPopulation(populations["NREM"],concentrations["G"])
+    rem = NeuronalPopulation(populations["REM"],concentrations["A"])
+    homeo = HomeostaticSleepDrive(cycles["homeostatic"])
+    return [wake,nrem,rem,homeo]
 
 
 ##### MAIN #####
 populations,concentrations,cycles,simulation_parameters = read_parameters()
 write_parameters("test.txt",populations,concentrations,cycles,simulation_parameters)
+modele = setClasses()
+
+
+# print("populations :")
+# for pop in populations :
+#     print '\t',pop,":"
+#     for param in populations[pop] :
+#         print "\t\t",param,populations[pop][param]
