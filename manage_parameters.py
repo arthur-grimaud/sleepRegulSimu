@@ -47,11 +47,11 @@ def read_parameters() :
                 check_sim = 0
             
             elif check_pop == 1 and line[0] != "*" :
-                if line[0] == "g" or line[0] == "pop_ext" :
-                    g_pop = []
+                if line[0] == "g" or line[0] == "pop_ext" or line[0] == "beta" :
+                    myParameter = []
                     for i in range(2,len(line)) :
-                        g_pop.append(line[i])
-                    populations[currentPopulation][line[0]] = g_pop
+                        myParameter.append(line[i])
+                    populations[currentPopulation][line[0]] = myParameter
                 else :
                     populations[currentPopulation][line[0]] = line[2]
             elif check_conc == 1 and line[0] != "@" :
@@ -74,7 +74,7 @@ def write_parameters(name_file,populations,concentrations,cycles,simulation_para
     for myPop in populations :
         fic.write("* population = "+myPop+"\n")
         for parameter in populations[myPop] :
-            if parameter == "g" or parameter == "pop_ext" :
+            if parameter == "g" or parameter == "pop_ext" or parameter == "beta" :
                 fic.write(parameter+" =")
                 for i in range(len(populations[myPop][parameter])) :
                     fic.write(" "+populations[myPop][parameter][i])
@@ -139,10 +139,10 @@ class NeuronalPopulation :
         return np.tanh((self.F/self.gamma) - self.C)/self.tau_NT
 
     def getBeta(self): #used to handle the homeostatic sleep drive
-        if isinstance (self.beta , list):
+        if len(self.beta) == 2 :
             return self.beta[0]*eval(self.beta[1]).h
-        else:
-            return self.beta
+        else :
+            return self.beta[0]
 
 class HomeostaticSleepDrive:
     # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ?? 
