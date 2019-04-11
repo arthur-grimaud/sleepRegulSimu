@@ -10,10 +10,9 @@ data = np.loadtxt("results.txt")
 f_W=data[0]
 f_N=data[1]
 f_R=data[2]
-C_E=data[3]
-C_A=data[4]
-C_G=data[5]
 h=data[6]
+
+hypnogram=np.loadtxt("hypnogram.txt")
 
 ### creation of the time list
 time = range(1,6)
