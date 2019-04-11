@@ -8,7 +8,7 @@ class NeuronalPopulation :
     # beta : could be either a constant or a list (decription à completer)
     # ...
     # g_NT_pop_list : list of weights of the synaptic response to a neurottransmitter Concentration
-    # pop_list : Populations associated to the weight list declared in "g_NT_pop_list" . Have to be a list of strings corresponding to the name of a NeuronalPopulation instance.
+    # pop_list : Populations associated to the weight list declared in "g_NT_pop_list". Have to be a list of strings corresponding to the name of a NeuronalPopulation instance.
     # (note, g_NT_pop_list and pop_list have to be the same length)
     def __init__(self, F, C, F_max, beta, alpha, gamma, tau_pop, tau_NT, g_NT_pop_list, pop_list):
         #initial conditions
@@ -68,18 +68,24 @@ class HomeostaticSleepDrive:
 
 
 
-#instanciation of the neuronal population and homeostatic sleep drive objects
-wake = NeuronalPopulation(6.0, 0.9, 6.5, -0.23, 0.5, 5.0, 25, 25E3, [-2.0, 1.2], ["nrem", "rem"] )
-nrem = NeuronalPopulation(1E-3, 1E-3, 5.0, [2.5,"homeo"], 0.25, 4.0, 25, 10E3, [-2.0], ["wake"])
-rem = NeuronalPopulation(1E-3, 1E-3, 5.0, -0.6, 0.25, 3.0, 1, 10E3, [-1.3, 1.5, -2.1], ["nrem", "rem", "wake"])
-homeo = HomeostaticSleepDrive(0.5, 1.0, 600, "wake", 2.0, 380)
+#instanciation of the neuronal population and homeostatic sleep drive objects (Rodent SR parameters)
+# wake = NeuronalPopulation(6.0, 0.9, 6.5, -0.23, 0.5, 5.0, 25, 25E3, [-2.0, 1.2], ["nrem", "rem"] )
+# nrem = NeuronalPopulation(1E-3, 1E-3, 5.0, [2.5,"homeo"], 0.25, 4.0, 25, 10E3, [-2.0], ["wake"])
+# rem = NeuronalPopulation(1E-3, 1E-3, 5.0, -0.6, 0.25, 3.0, 1, 10E3, [-1.3, 1.5, -2.1], ["nrem", "rem", "wake"])
+# homeo = HomeostaticSleepDrive(0.5, 1.0, 600, "wake", 2.0, 380)
+
+# (Human SR parameters)
+wake = NeuronalPopulation(6.0, 0.9, 6.5, -0.4,           0.5, 5.0, 1500E3, 25E3, [-1.68, 1.0], ["nrem", "rem"] )
+nrem = NeuronalPopulation(1E-3, 1E-3, 5.0, [1.5,"homeo"], 0.175, 4.0, 600E3, 10E3, [-2.0], ["wake"])
+rem = NeuronalPopulation(1E-3, 1E-3, 5.0, -0.9,          0.13, 2.0, 60E3, 10E3, [-1.3, 1.6, -4], ["nrem", "rem", "wake"])
+homeo = HomeostaticSleepDrive(0.5, 1.0, 3483E3, "wake", 2.0,30600E3)
 
 
 
 #Simulation parameters
 t = 0
-T = 30
-res = 1E4
+T = 48*60*60
+res = 10
 dt 	= 1E3/res
 
 #temporary: (storage)
@@ -96,6 +102,7 @@ hL = []
 
 while (t < T*res):
     t+=1
+    print(rem.C)
     wake.F = wake.F+dt*wake.getFR()
     nrem.F = nrem.F+dt*nrem.getFR()
     rem.F = rem.F+dt*rem.getFR()
