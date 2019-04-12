@@ -6,24 +6,24 @@ import math
 class NeuronalPopulation :
     # creation of the class NeuronalPopulation using the dictionnaries populations and concentrations 
     
-    def __init__(self,myPopulation,myConcentration) :
+    def __init__(self,myPopulation) :
         self.name = myPopulation["name"]
         #initial conditions
         self.F = myPopulation["f"]   ## variable
-        self.C  = myConcentration["C"]   ## variable
+        self.C  = myPopulation["C"]   ## variable
         #Firing rate parameters
         self.F_max = myPopulation["F_max"]
         self.beta = myPopulation["beta"]
         self.alpha = myPopulation["alpha"]
-        self.tau_pop = myPopulation["tau"]
+        self.tau_pop = myPopulation["tau_pop"]
         #parameters for getI method # both should be lists
-        self.g_NT_pop_list = myPopulation["g"]
-        self.pop_list = myPopulation["pop_ext"]
+        self.g_NT_pop_list = myPopulation["g_NT_pop_list"]
+        self.pop_list = myPopulation["pop_list"]
 
         #Neurotransmitter Concentration parameters
-        self.concentration = myConcentration["name"]
-        self.gamma = myConcentration["gamma"]
-        self.tau_NT = myConcentration["tau"]
+        self.concentration = myPopulation["concentration"]
+        self.gamma = myPopulation["gamma"]
+        self.tau_NT = myPopulation["tau_NT"]
 
         print('Neuronal population object', self.name, 'created')
 
@@ -55,13 +55,13 @@ class HomeostaticSleepDrive:
         self.name = myCycle["name"]
         ### variables
         self.h = myCycle["h"]
-        self.f_X = myCycle["X"]
+        self.f_X = myCycle["f_X"]
 
         ### parameters
         self.H_max = myCycle["H_max"]
-        self.tau_hw = myCycle["tau_w"]
-        self.tau_hs = myCycle["tau_s"]
-        self.theta_X = myCycle["theta"]
+        self.tau_hw = myCycle["tau_hw"]
+        self.tau_hs = myCycle["tau_hs"]
+        self.theta_X = myCycle["theta_X"]
 
         print('Homeostatis sleep drive object created')
 
