@@ -25,7 +25,7 @@ class NeuronalPopulation :
         self.gamma = myConcentration["gamma"]
         self.tau_NT = myConcentration["tau"]
 
-        print('Object created')
+        print('Neuronal population object', self.name, 'created')
 
     def getFR(self): #differential equation of the firing rate
         return ((self.F_max *(0.5*(1 + math.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
@@ -63,7 +63,7 @@ class HomeostaticSleepDrive:
         self.tau_hs = myCycle["tau_s"]
         self.theta_X = myCycle["theta"]
 
-        print('Object created')
+        print('Homeostatis sleep drive object created')
 
     def getH(self):
         print(self.heaviside(eval(self.f_X).F-self.theta_X))
@@ -81,8 +81,21 @@ class HomeostaticSleepDrive:
 class Connections:
     # creation of the connections class, which manages the connections between the different populations (manages the concentrations and associated weights)
 
-    def __init__(self,myPopulation) :
-        self.source = myPopulation["name"]
-        self.target = myPopulation["pop_ext"]
+    def __init__(self,source,target) :
+        self.source = source
+        self.target = target
+
+        print('Connection object',self.source,'-',self.target,'created')
     
-    ### lit les concentrations et les poids, calcule la nouvelle concentration et envoie vers la
+    ### lit les concentrations et les poids, calcule la nouvelle concentration et envoie vers la population cible pendant la fonction step
+
+
+class Network :
+    # creation of the network class, which manages the whole network formed by the neuronal populations and the different connections between them
+
+    def __init__(self,listPopulations,connections,HomeostaticSleepDrive) :
+        self.listPopulations = listPopulations
+        self.listConnections = connections
+        self.homeostatic = HomeostaticSleepDrive
+
+        print("Network object created")
