@@ -69,7 +69,6 @@ def write_parameters(name_file,modele) :
     for myPop in modele['populations'] :
         fic.write("* population = "+myPop.name+"\n")
         for parameter in vars(myPop) :
-            print(getattr(myPop,parameter))
             if isinstance(getattr(myPop,parameter),list) :
                 fic.write(parameter+" =")
                 for value in getattr(myPop,parameter) :
