@@ -4,11 +4,11 @@
 from manage_parameters import *
 from classes import *
 
-def setNeuronalPopulations(populations,concentrations) :
+def setNeuronalPopulations(populations) :
     ### set the NeuronalPopulations objects
-    wake = NeuronalPopulation(populations["wake"],concentrations["E"])
-    nrem = NeuronalPopulation(populations["NREM"],concentrations["G"])
-    rem = NeuronalPopulation(populations["REM"],concentrations["A"])
+    wake = NeuronalPopulation(populations["wake"])
+    nrem = NeuronalPopulation(populations["NREM"])
+    rem = NeuronalPopulation(populations["REM"])
     return [wake,nrem,rem]
 
 def setCycles(cycles) :
@@ -24,9 +24,9 @@ def setConnections(connections) :
             listConnections.append(Connections(pop_source,pop_ext))
     return listConnections
 
-def setModele(populations,concentrations,cycles,simulation_parameters,connections) :
+def setModele(populations,cycles,simulation_parameters,connections) :
     modele = {}
-    modele['populations'] = setNeuronalPopulations(populations,concentrations)
+    modele['populations'] = setNeuronalPopulations(populations)
     modele['cycles'] = setCycles(cycles) 
     modele['simulation_parameters'] = simulation_parameters
     modele['connections'] = setConnections(connections)
@@ -49,12 +49,12 @@ def setNetwork(modele) :
 
 
 ##### MAIN #####
-pop,conc,cycle,sim,conn=read_parameters()
-modele = setModele(pop,conc,cycle,sim,conn)
-# write_parameters("test.txt",modele)
-
+pop,cycle,sim,conn=read_parameters()
+modele = setModele(pop,cycle,sim,conn)
 network = setNetwork(modele)
-print(vars(network))
+write_parameters("test.txt",modele)
+
+# print(vars(network))
 
 # print(modele["populations"])
 # print(modele)
