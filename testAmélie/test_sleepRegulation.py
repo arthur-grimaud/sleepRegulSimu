@@ -4,28 +4,59 @@
 from manage_parameters import *
 from classes import *
 
-def setObjects() :
+def setNeuronalPopulations(populations,concentrations) :
     ### set the NeuronalPopulations objects
     wake = NeuronalPopulation(populations["wake"],concentrations["E"])
     nrem = NeuronalPopulation(populations["NREM"],concentrations["G"])
     rem = NeuronalPopulation(populations["REM"],concentrations["A"])
+    return [wake,nrem,rem]
 
+def setCycles(cycles) :
     ### set the HomeostaticSleepDrive object
     homeo = HomeostaticSleepDrive(cycles["homeostatic"])
+    return [homeo]
 
-    # ### set the Connections objects
-    # listPopulations = vars()
-    # for 
+def setConnections(connections) :
+    ### set the Connections objects
+    listConnections = []
+    for pop_source in connections.keys() :
+        for pop_ext in connections[pop_source] :
+            listConnections.append(Connections(pop_source,pop_ext))
+    return listConnections
 
-    return {'populations' : [wake,nrem,rem], 'cycles' : [homeo]}
+def setModele(populations,concentrations,cycles,simulation_parameters,connections) :
+    modele = {}
+    modele['populations'] = setNeuronalPopulations(populations,concentrations)
+    modele['cycles'] = setCycles(cycles) 
+    modele['simulation_parameters'] = simulation_parameters
+    modele['connections'] = setConnections(connections)
+    return modele
+
+def setNetwork(modele) :
+    ### set the Network object
+
+    # creation of the populations list
+    listPopulations = []
+    for myPop in modele["populations"] :
+        listPopulations.append(myPop.name)
+    
+    # get the homeostatic object
+    for cycle in modele["cycles"] :
+        if cycle.name == "homeostatic" :
+            homeostatic = cycle
+
+    return Network(listPopulations,modele["connections"],homeostatic)
 
 
 ##### MAIN #####
-populations,concentrations,cycles,simulation_parameters = read_parameters()
-modele = setObjects()
-modele['simulation_parameters'] = simulation_parameters
+pop,conc,cycle,sim,conn=read_parameters()
+modele = setModele(pop,conc,cycle,sim,conn)
+# write_parameters("test.txt",modele)
 
-print(modele["populations"])
-print(modele)
-# write_parameters("test.txt",modele["populations"],modeleconcentrations,cycles,simulation_parameters)
+network = setNetwork(modele)
+print(vars(network))
 
+# print(modele["populations"])
+# print(modele)
+
+# print(connections)
