@@ -1,6 +1,7 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+import math
 
 def read_parameters() :
     ### reads the file parameters.txt and extract parameters from it
@@ -127,7 +128,7 @@ class NeuronalPopulation :
         print('Object created')
 
     def getFR(self): #differential equation of the firing rate
-        return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
+        return ((self.F_max *(0.5*(1 + math.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
 
     def getI(self):
         result = 0
@@ -136,7 +137,7 @@ class NeuronalPopulation :
         return result
 
     def getC(self): #differential equation of the neurotransmitter concentration released by the population
-        return np.tanh((self.F/self.gamma) - self.C)/self.tau_NT
+        return math.tanh((self.F/self.gamma) - self.C)/self.tau_NT
 
     def getBeta(self): #used to handle the homeostatic sleep drive
         if len(self.beta) == 2 :
