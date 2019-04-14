@@ -84,7 +84,7 @@ homeo = HomeostaticSleepDrive(0.5, 1.0, 3483E3, "wake", 2.0,30600E3)
 
 #Simulation parameters
 t = 0
-T = 48*60*60
+T = 1
 res = 10
 dt 	= 1E3/res
 
@@ -121,3 +121,60 @@ while (t < T*res):
     remC.append(rem.C)
 
     hL.append(homeo.h)
+
+
+
+
+
+
+from tkinter import *
+# import SleepRegulationOOP.py as SR
+#
+#
+#
+# wake = SR.NeuronalPopulation(6.0, 0.9, 6.5, -0.23, 0.5, 5.0, 25, 25E3, [-2.0, 1.2], ["nrem", "rem"] )
+
+window = Tk()
+window.title("Model Parameters")
+window.geometry()
+
+
+
+i = 0
+objFrame = Frame (window)
+for attr, value in wake.__dict__.items():
+    i+=1
+    lbl = Label(objFrame, text=attr)
+    lbl.grid(column=0, row=i)
+    txt = Entry(objFrame,width=10)
+    txt.insert(END, value)
+    txt.grid(column=1, row=i)
+objFrame.grid(column=0, row=0)
+
+i = 0
+objFrame = Frame (window)
+for attr, value in nrem.__dict__.items():
+    i+=1
+    lbl = Label(objFrame, text=attr)
+    lbl.grid(column=0, row=i)
+    txt = Entry(objFrame,width=10)
+    txt.insert(END, value)
+    txt.grid(column=1, row=i)
+objFrame.grid(column=1, row=0)
+
+i = 0
+objFrame = Frame (window)
+for attr, value in rem.__dict__.items():
+    i+=1
+    lbl = Label(objFrame, text=attr)
+    lbl.grid(column=0, row=i)
+    txt = Entry(objFrame,width=10)
+    txt.insert(END, value)
+    txt.grid(column=2, row=i)
+objFrame.grid(column=2, row=0)
+
+
+
+
+
+window.mainloop()
