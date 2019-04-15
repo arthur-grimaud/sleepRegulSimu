@@ -9,7 +9,6 @@ from SleepRegulationOOP import HomeostaticSleepDrive
 from SleepRegulationOOP import Network
 
 
-
 pop,cycle,sim,conn=read_parameters()
 network = Network(sim)
 network.addNP(pop["wake"])
@@ -17,15 +16,23 @@ network.addNP(pop["NREM"])
 network.addNP(pop["REM"])
 network.addHSD(cycle["homeostatic"])
 
-network.addNPConnection("NP-NP","wake","NREM",10)
-network.addNPConnection("HSD-NP","HSD","NREM",10)
-network.addNPConnection("NP-HSD","NREM","HSD",None)
+network.addNPConnection("NP-NP","wake","REM",-1)
+network.addNPConnection("NP-NP","REM","wake",1)
+network.addNPConnection("NP-NP","REM","REM",-1)
+network.addNPConnection("NP-NP","NREM","REM",-1)
+network.addNPConnection("NP-NP","wake","NREM",-1)
+network.addNPConnection("NP-NP","NREM","wake",-1)
+network.addNPConnection("HSD-NP","HSD","NREM",1)
+network.addNPConnection("NP-HSD","NREM","HSD",1)
 
+network.displayGraph()
 
 
 network.displayConnections()
 
 network.printAttrType("wake")
+
+
 
 
 

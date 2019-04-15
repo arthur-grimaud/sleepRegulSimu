@@ -4,6 +4,7 @@
 import numpy as np
 from tkinter import *
 import math
+from graphviz import Digraph
 
 
 class Network:
@@ -62,6 +63,21 @@ class Network:
             txt.grid(column=1, row=i)
         objFrame.grid(column=0, row=0)
         window.mainloop()
+
+    def displayGraph(self):
+        dot = Digraph()
+
+        for cName in self.compartements.keys():
+            dot.node(str(cName),str(cName))
+
+        for cObj in self.compartements.values():
+            for conn in cObj.connections:
+                    if conn.weight < 0:
+                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
+                    if conn.weight > 0:
+                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
+
+        dot.render('test-output.gv', view=True)
 
     #Debugging methods
 

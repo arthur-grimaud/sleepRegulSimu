@@ -1,0 +1,14 @@
+digraph {
+	wake [label=wake]
+	NREM [label=NREM]
+	REM [label=REM]
+	HSD [label=HSD]
+	REM -> wake [constraint=true directed=false]
+	NREM -> wake [arrowhead=tee constraint=true directed=false]
+	wake -> NREM [arrowhead=tee constraint=true directed=false]
+	HSD -> NREM [constraint=true directed=false]
+	wake -> REM [arrowhead=tee constraint=true directed=false]
+	REM -> REM [arrowhead=tee constraint=true directed=false]
+	NREM -> REM [arrowhead=tee constraint=true directed=false]
+	NREM -> HSD [constraint=true directed=false]
+}
