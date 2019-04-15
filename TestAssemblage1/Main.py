@@ -2,96 +2,126 @@
 #-*-coding:utf-8-*-
 
 from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
 
 from manage_parameters import *
 from SleepRegulationOOP import NeuronalPopulation
 from SleepRegulationOOP import HomeostaticSleepDrive
 from SleepRegulationOOP import Network
-
-
-pop,cycle,sim,conn=read_parameters()
-network = Network(sim)
-network.addNP(pop["wake"])
-network.addNP(pop["NREM"])
-network.addNP(pop["REM"])
-network.addHSD(cycle["homeostatic"])
-
-network.addNPConnection("NP-NP","wake","REM",-1)
-network.addNPConnection("NP-NP","REM","wake",1)
-network.addNPConnection("NP-NP","REM","REM",-1)
-network.addNPConnection("NP-NP","NREM","REM",-1)
-network.addNPConnection("NP-NP","wake","NREM",-1)
-network.addNPConnection("NP-NP","NREM","wake",-1)
-network.addNPConnection("HSD-NP","HSD","NREM",1)
-network.addNPConnection("NP-HSD","NREM","HSD",1)
-
-network.displayGraph()
-
-
-network.displayConnections()
-
-network.printAttrType("wake")
+import os
 
 
 
 
 
-
-#network.runSim()
-
+network = Network()
 
 
+def loadModel():
+    global network
+
+
+    pop,cycle,sim,conn=read_parameters(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("text files","*.txt"),("all files","*.*"))))
+    network = Network(sim)
+
+    for key in pop.keys():
+        network.addNP(pop[key])
+
+    for key in cycle.keys():
+        network.addHSD(cycle[key])
+
+    # for key in cycle.keys():
+    #     network.addNP(conn[key])
+
+    network.addNPConnection("NP-NP","wake","REM",-4)
+    network.addNPConnection("NP-NP","REM","wake",1)
+    network.addNPConnection("NP-NP","REM","REM",1.6)
+    network.addNPConnection("NP-NP","NREM","REM",-1.3)
+    network.addNPConnection("NP-NP","wake","NREM",-2)
+    network.addNPConnection("NP-NP","NREM","wake",-1.68)
+    network.addNPConnection("HSD-NP","HSD","NREM",1.5)
+    network.addNPConnection("NP-HSD","NREM","HSD",0)
 
 
 
+#----------- Window initialization -----------
+
+window = Tk()
+window.title("SR sim")
+window.geometry()
+
+
+n = ttk.Notebook(window)   # Creation of tab system
+n.pack()
+
+mainMenu = ttk.Frame(n)       # Add main tab
+mainMenu.pack()
+
+paramMenu = ttk.Frame(n)       # Add parameters tab
+paramMenu.pack()
+
+runMenu = ttk.Frame(n)       # Add run tab
+runMenu.pack()
+
+visuMenu = ttk.Frame(n)       # Add visualization tab
+visuMenu.pack()
+
+statMenu = ttk.Frame(n)       # Add statistics tab
+statMenu.pack()
+
+n.add(mainMenu, text='Main')
+n.add(paramMenu, text='Parameters')
+n.add(runMenu, text='Run')
+n.add(visuMenu, text='Visualization')
+n.add(statMenu, text='Statistics')
 
 
 
+#-----------Main menu widgets---------------
+
+b = Button(mainMenu, text="Load model", command=lambda: loadModel(),width=25)
+b.grid(column=0, row=0)
+
+b = Button(mainMenu, text="Display network", command=lambda: network.displayGraph(),width=25)
+b.grid(column=0, row=1)
+
+b = Button(mainMenu, text="Display connections", command=lambda: network.displayConnections(),width=25)
+b.grid(column=0, row=2)
+
+txt = Entry(mainMenu,width=25)
+txt.insert(END, "Enter compartment name")
+txt.grid(column=1, row=3)
 
 
-#----------------------------------------
+b = Button(mainMenu, text="PrintCompParamAndType", command=lambda: network.printAttrType(txt.get()),width=25)
+b.grid(column=0, row=3)
 
 
 
+#--------------Param menu widgets-------------------
 
-# window = Tk()
-# window.title("SR sim")
-# window.geometry()
-#
-#
-# b = Button(window, text="load model", command=lambda: readAndAdd())
-# b.grid(column=0, row=0)
-#
-# b2 = Button(window, text="run sim", command=lambda: network.runSim())
-# b2.grid(column=0, row=1)
-#
-#
-#
-# window.mainloop()
+b = Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
+b.grid(column=0, row=0)
 
-#network.displayCompParam("NREM")
+#--------------Run menu widgets-------------------
 
-#network.runSim()
+b = Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)
+b.grid(column=0, row=0)
+b = Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar(runMenu).grid(column=0, row=2),width=25)
+b.grid(column=0, row=1)
+
+#--------------Visualization menu widgets-------------------
+
+lbl = Label(visuMenu, text="Not available yet")
+lbl.config(font=("Courier", 30))
+lbl.grid(column=0, row=0)
+
+#--------------Visualization menu widgets-------------------
+
+lbl = Label(statMenu, text="Not available yet")
+lbl.config(font=("Courier", 30))
+lbl.grid(column=0, row=0)
 
 
-#modele = setClasses(populations,concentrations,cycles,simulation_parameters)
-
-
-# window = Tk()
-# window.title("Model Parameters")
-# window.geometry()
-#
-# i = 0
-# objFrame = Frame (window)
-# for attr, value in network.compartements[0].__dict__.items():
-#     i+=1
-#     lbl = Label(objFrame, text=attr)
-#     lbl.grid(column=0, row=i)
-#     txt = Entry(objFrame,width=10)
-#     txt.insert(END, value)
-#     txt.grid(column=1, row=i)
-# objFrame.grid(column=0, row=0)
-#
-#
-#
-# window.mainloop()
+window.mainloop()

@@ -9,68 +9,108 @@ from graphviz import Digraph
 
 class Network:
 
-    def __init__(self,simParam):
-        self.compartements = {}
-        #self.connections = {}
+    def __init__(self,*args):
+        self.compartments  = {}
+        self.t = None
+        self.T = None
+        self.res = None
+        self.dt = None
 
+        if len(args) == 1:
+            self.t = int(args[0]["t"])
+            self.T = int(args[0]["T"])
+            self.res = float(args[0]["res"])
+            self.dt = float(args[0]["dt"]) / self.res
+
+
+    def setSimParam(self, simParam):
         self.t = int(simParam["t"])
         self.T = int(simParam["T"])
         self.res = float(simParam["res"])
         self.dt = float(simParam["dt"]) / self.res
 
-        self.results = {}
-
-
     #Run simulation methods
     def runSim(self):
-        currT = 0
-        while (self.t < self.T*self.res):
+        currT = self.t
+        while (currT < self.T*self.res):
             print(currT)
-            print(self.compartements["NREM"].F)
+            print(float(self.compartments["wake"].F))
             self.nextStep()
-            currT+=1
+            currT += 1
 
 
-    def nextStep(self): #call next step method in each compartements
-        for c in self.compartements.values():
-            c.nextStep(self.dt)
+
+    def nextStep(self): #call next step method in each compartments
+        for c in self.compartments .values():
+            c.setNextStep(self.dt)
 
     #Network modification methods
 
     def addNP(self, populationParam):
-        self.compartements[populationParam["name"]] = NeuronalPopulation(populationParam)
+        self.compartments [populationParam["name"]] = NeuronalPopulation(populationParam)
 
     def addHSD(self, cycleParam):
-        self.compartements['HSD'] = HomeostaticSleepDrive(cycleParam)
+        self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam)
 
     def addNPConnection(self, type, sourceName, targetName, weight):
-        self.compartements[targetName].connections.append(Connection(type, self.compartements[sourceName],self.compartements[targetName],weight))
+        self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
     #Display methods
 
-    def displayCompParam(self,compID):
-        window = Tk()
-        window.title("Model Parameters")
-        window.geometry()
+    def displayCompParam(self,window):
+
         i = 0
         objFrame = Frame (window)
-        for attr, value in self.compartements[compID].__dict__.items():
+        for comp in self.compartments.values():
+            i += 1
+            self.getCompartmentFrame(comp,objFrame).grid(column=i, row=0)
+        return objFrame
+
+
+    def getCompartmentFrame(self, comp, frame):
+
+        i = 0
+        compFrame = Frame (frame)
+
+        lbl = Label(compFrame, text=comp.name)
+        lbl.config(font=("Courier", 15))
+        lbl.grid(column=0, row=0)
+
+        for attr, value in comp.__dict__.items():
             i+=1
-            lbl = Label(objFrame, text=attr)
+            lbl = Label(compFrame, text=attr)
             lbl.grid(column=0, row=i)
-            txt = Entry(objFrame,width=10)
+            txt = Entry(compFrame, width=10)
             txt.insert(END, value)
             txt.grid(column=1, row=i)
-        objFrame.grid(column=0, row=0)
-        window.mainloop()
+
+        return compFrame
+
+
+    def displayCompVar(self,window):
+
+        i = 0
+        frame = Frame (window)
+        for comp in self.compartments.values():
+            i += 1
+            lbl = Label(frame, text=comp.name)
+            lbl.grid(column=0, row=i)
+            cb = Checkbutton(frame, text = "FiringRate", width = 20)
+            cb.grid(column=1, row=i)
+            cb = Checkbutton(frame, text = "Concentration", width = 20)
+            cb.grid(column=2, row=i)
+
+        return frame
+
+
 
     def displayGraph(self):
         dot = Digraph()
 
-        for cName in self.compartements.keys():
+        for cName in self.compartments .keys():
             dot.node(str(cName),str(cName))
 
-        for cObj in self.compartements.values():
+        for cObj in self.compartments .values():
             for conn in cObj.connections:
                     if conn.weight < 0:
                         dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
@@ -82,11 +122,11 @@ class Network:
     #Debugging methods
 
     def printAttrType(self,compID):
-        for attr, value in self.compartements[compID].__dict__.items():
-            print(attr, type(value))
+        for attr, value in self.compartments [compID].__dict__.items():
+            print(attr," ",value," ",type(value))
 
     def displayConnections(self):
-        for attr, value in self.compartements.items():
+        for attr, value in self.compartments .items():
             for conn in value.connections:
                 print("Connection type: ",conn.type,"  ", conn.source.name,"--",conn.weight,"-->",conn.target.name)
 
@@ -100,36 +140,34 @@ class NeuronalPopulation :
 
     def __init__(self,myPopulation) :
         self.name = myPopulation["name"]
+
+        #List of 'Connection' objects
+        self.connections = []
+
         #initial conditions
         self.F = float(myPopulation["f"])   ## variable
         self.C  = float(myPopulation["C"])   ## variable
+
         #Firing rate parameters
         self.F_max = float(myPopulation["F_max"])
-
         self.beta = myPopulation["beta"]
         self.alpha = float(myPopulation["alpha"])
         self.tau_pop = float(myPopulation["tau_pop"])
-        #parameters for getI method # both should be lists
-        #self.g_NT_pop_list = myPopulation["g_NT_pop_list"]
-        #self.pop_list = myPopulation["pop_list"]
-
-        self.connections = []
 
         #Neurotransmitter Concentration parameters
         self.concentration = myPopulation["concentration"]
         self.gamma = float(myPopulation["gamma"])
         self.tau_NT = float(myPopulation["tau_NT"])
 
-        print('Neuronal population object', self.name, 'created')
+        print('NeuronalPopulation object: ', self.name, ' created')
 
 
-    def nextStep(self, dt):
+    def setNextStep(self, dt):
         self.F = self.F+dt*self.getFR()
         self.C = self.C+dt*self.getC()
 
     def getFR(self): #differential equation of the firing rate
         return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
-
     def getI(self):
         result = 0
         for c in self.connections:
@@ -163,10 +201,10 @@ class HomeostaticSleepDrive:
 
         self.connections = []
 
-        print('Object created')
+        print('HomeostaticSleepDrive object: ', self.name, ' created')
 
 
-    def nextStep(self, dt):
+    def setNextStep(self, dt):
         self.h = self.h+dt*self.getH()
 
 
@@ -193,7 +231,7 @@ class Connection:
         self.target = target
         self.weight = weight
 
-        print('Connection object',self.source,'-',self.target,'created')
+        print('Connection object',self.source.name ,'-',self.target.name ,'created')
 
     def getConnectVal(self):
         if self.type == "NP-NP":

@@ -63,7 +63,7 @@ theta_X = 2.0
 
 #
 t = 0
-T = 30
-res = 1E4
-dt = 1E3 
+T = 1
+res = 1E2
+dt = 1E3
 #

@@ -1,11 +1,11 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
-def read_parameters() :
+def read_parameters(file) :
     ### reads the file parameters.txt and extract parameters from it
     # returns a list of dictionnaries of dictionnaries : [populations,concentrations,cycles,time]
 
-    fic = open("default_parameters.txt","r")
+    fic = open(file,"r")
     content = fic.read().split("\n")
 
     populations = {}
