@@ -38,8 +38,6 @@ class Network:
             self.nextStep()
             currT += 1
 
-
-
     def nextStep(self): #call next step method in each compartments
         for c in self.compartments .values():
             c.setNextStep(self.dt)
@@ -55,7 +53,7 @@ class Network:
     def addNPConnection(self, type, sourceName, targetName, weight):
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
-    #Display methods
+    #Display methods  (TKINTER) /!\ Should be moved to another script /!\
 
     def displayCompParam(self,window):
 
@@ -77,12 +75,29 @@ class Network:
         lbl.grid(column=0, row=0)
 
         for attr, value in comp.__dict__.items():
-            i+=1
-            lbl = Label(compFrame, text=attr)
-            lbl.grid(column=0, row=i)
-            txt = Entry(compFrame, width=10)
-            txt.insert(END, value)
-            txt.grid(column=1, row=i)
+
+            if isinstance(value, list) and len(value) > 0 and isinstance(value[0], Connection): #Si liste de connection
+                for c in value:
+                    i += 1
+                    lbl = Label(compFrame, text="connection: ")
+                    lbl.grid(column=0, row=i)
+                    txt = Entry(compFrame, width=10)
+                    txt.insert(END, c.source.name)
+                    txt.grid(column=1, row=i)
+                    txt = Entry(compFrame, width=10)
+                    txt.insert(END, c.target.name)
+                    txt.grid(column=2, row=i)
+                    txt = Entry(compFrame, width=10)
+                    txt.insert(END, c.weight)
+                    txt.grid(column=3, row=i)
+            else:
+                i += 1
+                lbl = Label(compFrame, text=attr)
+                lbl.grid(column=0, row=i)
+                txt = Entry(compFrame, width=10)
+                txt.insert(END, value)
+                txt.grid(column=1, row=i)
+
 
         return compFrame
 
@@ -101,6 +116,88 @@ class Network:
             cb.grid(column=2, row=i)
 
         return frame
+
+
+    def getCreationWindow(self):   #Temporary implementation
+
+        creaWin = Tk()
+
+        i = 0
+
+        for attr, value in self.compartments["NREM"].__dict__.items():
+            i+=1
+            lbl = Label(creaWin, text=attr)
+            lbl.grid(column=0, row=i)
+            txt = Entry(creaWin, width=10)
+            txt.insert(END, "0")
+            txt.grid(column=1, row=i)
+
+
+        b = Button(creaWin, text="Create Compartment", command=lambda: self.CreateObjFromCreationWindow(creaWin),width=25)
+        b.grid(column=2, row=0)
+
+        creaWin.mainloop()
+
+
+    def getCreationWindowConnect(self):   #Temporary implementation
+
+        creaWin = Tk()
+
+        #source
+        lbl = Label(creaWin, text="source")
+        lbl.grid(column=0, row=0)
+        txt = Entry(creaWin, width=10)
+        txt.insert(END, "0")
+        txt.grid(column=1, row=0)
+        #target
+        lbl = Label(creaWin, text="target")
+        lbl.grid(column=0, row=1)
+        txt = Entry(creaWin, width=10)
+        txt.insert(END, "0")
+        txt.grid(column=1, row=1)
+        #weight
+        lbl = Label(creaWin, text="weight")
+        lbl.grid(column=0, row=2)
+        txt = Entry(creaWin, width=10)
+        txt.insert(END, "0")
+        txt.grid(column=1, row=2)
+        #type
+        lbl = Label(creaWin, text="type")
+        lbl.grid(column=0, row=3)
+        txt = Entry(creaWin, width=10)
+        txt.insert(END, "0")
+        txt.grid(column=1, row=3)
+
+
+        b = Button(creaWin, text="Create Connection", command=lambda: self.CreateObjFromCreationWindowConnect(creaWin),width=25)
+        b.grid(column=0, row=5)
+
+        creaWin.mainloop()
+
+
+    def CreateObjFromCreationWindow(self, window):   #Temporary implementation
+
+        allWidgets = window.winfo_children() #get all widgets from the Object creation window
+        popParam = {}
+        for w in range(0, len(allWidgets)-2, 2):
+            popParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
+            print(allWidgets[w], allWidgets[w+1])
+        self.addNP(popParam)
+
+        window.destroy()
+
+
+    def CreateObjFromCreationWindowConnect(self, window):   #Temporary implementation
+
+        allWidgets = window.winfo_children() #get all widgets from the Object creation window
+        popParam = {}
+        for w in range(0, len(allWidgets)-1, 2):
+            popParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
+            print(allWidgets[w], allWidgets[w+1])
+        self.addNP(popParam)
+
+        window.destroy()
+
 
 
 
@@ -145,7 +242,7 @@ class NeuronalPopulation :
         self.connections = []
 
         #initial conditions
-        self.F = float(myPopulation["f"])   ## variable
+        self.F = float(myPopulation["F"])   ## variable
         self.C  = float(myPopulation["C"])   ## variable
 
         #Firing rate parameters

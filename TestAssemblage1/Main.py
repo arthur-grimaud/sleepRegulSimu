@@ -104,6 +104,9 @@ b.grid(column=0, row=3)
 b = Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
 b.grid(column=0, row=0)
 
+b = Button(paramMenu, text="Add NP (WIP)", command=lambda: network.getCreationWindow(),width=25)
+b.grid(column=0, row=4)
+
 #--------------Run menu widgets-------------------
 
 b = Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)

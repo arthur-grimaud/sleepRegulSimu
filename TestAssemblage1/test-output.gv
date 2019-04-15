@@ -3,6 +3,7 @@ digraph {
 	NREM [label=NREM]
 	REM [label=REM]
 	HSD [label=HSD]
+	Cortex [label=Cortex]
 	REM -> wake [constraint=true directed=false]
 	NREM -> wake [arrowhead=tee constraint=true directed=false]
 	wake -> NREM [arrowhead=tee constraint=true directed=false]

@@ -3,7 +3,7 @@
 // variable g is the weight applied to the concentration of the corresponding population in variable pop_list
 
 * population = wake
-f = 6.0
+F = 6.0
 F_max = 6.5
 alpha = 0.5
 beta = -0.23
@@ -18,7 +18,7 @@ tau_NT = 25E3
 *
 
 * population = NREM
-f = 1E-3
+F = 1E-3
 F_max = 5.
 alpha = 0.25
 beta = 2.5 homeostatic
@@ -34,7 +34,7 @@ tau_NT = 10E3
 
 
 * population = REM
-f = 1E-3
+F = 1E-3
 F_max = 5.
 alpha = 0.25
 beta = -0.6
@@ -63,7 +63,7 @@ theta_X = 2.0
 
 #
 t = 0
-T = 1
+T = 100000
 res = 1E2
 dt = 1E3
 #
