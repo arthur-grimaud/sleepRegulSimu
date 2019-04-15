@@ -1,0 +1,69 @@
+// lines beginning with an "*" corresponds to the instanciation of a neuronal population
+// lines beginning with an "@" corresponds to the instanciation of the last created population's concentration
+// variable g is the weight applied to the concentration of the corresponding population in variable pop_list
+
+* population = wake
+f = 6.0
+F_max = 6.5
+alpha = 0.5
+beta = -0.23
+tau_pop = 25
+g_NT_pop_list = -2.0 1.2
+pop_list = NREM REM
+
+concentration = E
+C = 0.9
+gamma = 5.0
+tau_NT = 25E3
+*
+
+* population = NREM
+f = 1E-3
+F_max = 5.
+alpha = 0.25
+beta = 2.5 homeostatic
+tau_pop = 10
+g_NT_pop_list = -2.0
+pop_list = wake
+
+concentration = G
+C = 1E-3
+gamma = 4.0
+tau_NT = 10E3
+*
+
+
+* population = REM
+f = 1E-3
+F_max = 5.
+alpha = 0.25
+beta = -0.6
+tau_pop = 1
+g_NT_pop_list = -1.3 1.5 -2.1
+pop_list = NREM REM wake
+
+concentration = A
+C = 1E-3
+gamma = 3.0
+tau_NT = 10E3
+*
+
+// lines beginning with an "+" corresponds to the instanciation of a cycle
+
++ cycle = homeostatic
+h = 0.5
+H_max = 1.0
+tau_hw = 600
+tau_hs = 380
+f_X = wake
+theta_X = 2.0
++
+
+// lines beginning with an "#" corresponds to the simulation parameters
+
+#
+t = 0
+T = 30
+res = 1E4
+dt = 1E3 
+#
