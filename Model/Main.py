@@ -27,21 +27,25 @@ def loadModel():
 
     for key in pop.keys():
         network.addNP(pop[key])
+    print("### Neuronal Populations OK ###\n")
 
     for key in cycle.keys():
         network.addHSD(cycle[key])
+    print("### Homeostatic Sleep Drive OK ###\n")
 
     # for key in cycle.keys():
     #     network.addNP(conn[key])
 
-    network.addNPConnection("NP-NP","wake","REM",-4)
-    network.addNPConnection("NP-NP","REM","wake",1)
-    network.addNPConnection("NP-NP","REM","REM",1.6)
-    network.addNPConnection("NP-NP","NREM","REM",-1.3)
-    network.addNPConnection("NP-NP","wake","NREM",-2)
-    network.addNPConnection("NP-NP","NREM","wake",-1.68)
+    for pop_source in conn.keys() :
+        i = 0
+        for pop_ext in conn[pop_source] :
+            network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_source]["g_NT_pop_list"][i])
+            i+=1
     network.addNPConnection("HSD-NP","HSD","NREM",1.5)
     network.addNPConnection("NP-HSD","NREM","HSD",0)
+    print("### Connections OK ###\n")
+
+
 
 
 
