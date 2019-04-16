@@ -5,9 +5,10 @@ import numpy as np
 from tkinter import *
 import math
 from graphviz import Digraph
+from GUI import NetworkGUI
 
 
-class Network:
+class Network(NetworkGUI):
 
     def __init__(self,*args):
         self.compartments  = {}
@@ -34,10 +35,11 @@ class Network:
     #Run simulation methods
     def runSim(self):
         currT = self.t
+        self.setRecorders()
         while (currT < self.T*self.res):
             # print(currT)
             # print(float(self.compartments["wake"].F))
-            #self.recorders()
+            self.recorders()
             self.nextStep()
             currT += 1
 
@@ -47,21 +49,23 @@ class Network:
         for c in self.compartments .values():
             c.setNextStep(self.dt)
 
+    #---------Recorders-----------------
 
-    #Recorder
-    # def setRecorders(self):
-    #     self.results["wake_F"] =[]
-    #     self.results["NREM_F"] =[]
-    # def getRecordersParam(self):
-    #     # param =[]
-    #     # for c in self.compartements:
-    #     #     param.append()
-    #     return [["wake","F"],["NREM","F"]]
-    #
-    # def recorders(self):
-    #     for var in self.getRecordersParam():
-    #         self.results.setdefault(var[0]]+"_"+var[1], []).append(float(getattr(self.compartments[var[0]],var[1])))
-    #         #var[0]]+"_"+var[1]
+    def setRecorders(self):
+        self.results["wake_F"] =[]
+        self.results["NREM_F"] =[]
+
+
+    def getRecordersParam(self):
+        # param =[]
+        # for c in self.compartements:
+        #     param.append()
+        return [["wake","F"],["NREM","F"]]
+
+    def recorders(self):
+        for var in self.getRecordersParam():
+            key = var[0]+"_"+var[1]
+            self.results.setdefault(key, []).append(float(getattr(self.compartments[var[0]],var[1])))
 
 
     #Network modification methods
@@ -75,7 +79,133 @@ class Network:
     def addNPConnection(self, type, sourceName, targetName, weight):
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
-    #Display methods  (TKINTER) /!\ Should be moved to another script /!\
+    #Debugging methods
+
+    def printAttrType(self,compID):
+        for attr, value in self.compartments [compID].__dict__.items():
+            print(attr," ",value," ",type(value))
+
+    def displayConnections(self):
+        for attr, value in self.compartments .items():
+            for conn in value.connections:
+                print("Connection type: ",conn.type,"  ", conn.source.name,"--",conn.weight,"-->",conn.target.name)
+
+
+
+
+
+
+class NeuronalPopulation :
+    # creation of the class NeuronalPopulation using the dictionnaries populations and concentrations
+
+    def __init__(self,myPopulation) :
+        self.name = myPopulation["name"]
+
+        #List of 'Connection' objects
+        self.connections = []
+
+        #initial conditions
+        self.F = float(myPopulation["F"])   ## variable
+        self.C  = float(myPopulation["C"])   ## variable
+
+        #Firing rate parameters
+        self.F_max = float(myPopulation["F_max"])
+        self.beta = myPopulation["beta"]
+        self.alpha = float(myPopulation["alpha"])
+        self.tau_pop = float(myPopulation["tau_pop"])
+
+        #Neurotransmitter Concentration parameters
+        self.concentration = myPopulation["concentration"]
+        self.gamma = float(myPopulation["gamma"])
+        self.tau_NT = float(myPopulation["tau_NT"])
+
+        print('NeuronalPopulation object: ', self.name, ' created')
+
+
+    def setNextStep(self, dt):
+        self.F = self.F+dt*self.getFR()
+        self.C = self.C+dt*self.getC()
+
+
+    def getFR(self): #differential equation of the firing rate
+        return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
+    def getI(self):
+        result = 0
+        for c in self.connections:
+            if c.type == "NP-NP":
+                result += c.getConnectVal()
+        return result
+
+    def getC(self): #differential equation of the neurotransmitter concentration released by the population
+        return np.tanh((self.F/self.gamma) - self.C)/self.tau_NT
+
+    def getBeta(self): #used to handle the homeostatic sleep drive
+        if len(self.beta) == 2 :
+            for c in self.connections:
+                if c.type == "HSD-NP":
+                    return c.getConnectVal()
+
+        return int(float(self.beta[0]))
+
+class HomeostaticSleepDrive:
+    # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
+
+    def __init__(self, myCycle):
+        self.name = "HSD"
+
+        self.h = float(myCycle["h"])
+        self.H_max = float(myCycle["H_max"])
+        self.tau_hw = float(myCycle["tau_hw"])
+        self.tau_hs = float(myCycle["tau_hs"])
+        #self.f_X = myCycle["f_X"]
+        self.theta_X = float(myCycle["theta_X"])
+
+        self.connections = []
+
+        print('HomeostaticSleepDrive object: ', self.name, ' created')
+
+
+    def setNextStep(self, dt):
+        self.h = self.h+dt*self.getH()
+
+
+    def getH(self):
+        return (self.H_max-self.h)/self.tau_hw*self.heaviside(self.getSourceFR()-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR())
+
+    def getSourceFR(self):
+        if len(self.connections) > 0:
+            return self.connections[0].getConnectVal()
+
+    def heaviside(self,X):
+        if(X >= 0):
+            return 1
+        else:
+            return 0
+
+
+class Connection:
+    # creation of the connections class, which manages the connections between the different populations (manages the concentrations and associated weights)
+
+    def __init__(self, type, source, target, weight) :
+        self.type = type
+        self.source = source
+        self.target = target
+        self.weight = weight
+
+        print('Connection object',self.source.name ,'-',self.target.name ,'created')
+
+    def getConnectVal(self):
+        if self.type == "NP-NP":
+            return self.source.C * self.weight
+        if self.type == "HSD-NP":
+            return self.source.h * self.weight
+        if self.type == "NP-HSD":
+            return self.source.F
+
+
+class NetworkGUI:
+    def __init__(self) :
+        pass
 
     def displayCompParam(self,window):
 
@@ -237,126 +367,3 @@ class Network:
                         dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
 
         dot.render('test-output.gv', view=True)
-
-    #Debugging methods
-
-    def printAttrType(self,compID):
-        for attr, value in self.compartments [compID].__dict__.items():
-            print(attr," ",value," ",type(value))
-
-    def displayConnections(self):
-        for attr, value in self.compartments .items():
-            for conn in value.connections:
-                print("Connection type: ",conn.type,"  ", conn.source.name,"--",conn.weight,"-->",conn.target.name)
-
-
-
-
-
-
-class NeuronalPopulation :
-    # creation of the class NeuronalPopulation using the dictionnaries populations and concentrations
-
-    def __init__(self,myPopulation) :
-        self.name = myPopulation["name"]
-
-        #List of 'Connection' objects
-        self.connections = []
-
-        #initial conditions
-        self.F = float(myPopulation["F"])   ## variable
-        self.C  = float(myPopulation["C"])   ## variable
-
-        #Firing rate parameters
-        self.F_max = float(myPopulation["F_max"])
-        self.beta = myPopulation["beta"]
-        self.alpha = float(myPopulation["alpha"])
-        self.tau_pop = float(myPopulation["tau_pop"])
-
-        #Neurotransmitter Concentration parameters
-        self.concentration = myPopulation["concentration"]
-        self.gamma = float(myPopulation["gamma"])
-        self.tau_NT = float(myPopulation["tau_NT"])
-
-        print('NeuronalPopulation object: ', self.name, ' created')
-
-
-    def setNextStep(self, dt):
-        self.F = self.F+dt*self.getFR()
-        self.C = self.C+dt*self.getC()
-
-
-    def getFR(self): #differential equation of the firing rate
-        return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
-    def getI(self):
-        result = 0
-        for c in self.connections:
-            if c.type == "NP-NP":
-                result += c.getConnectVal()
-        return result
-
-    def getC(self): #differential equation of the neurotransmitter concentration released by the population
-        return np.tanh((self.F/self.gamma) - self.C)/self.tau_NT
-
-    def getBeta(self): #used to handle the homeostatic sleep drive
-        if len(self.beta) == 2 :
-            for c in self.connections:
-                if c.type == "HSD-NP":
-                    return c.getConnectVal()
-
-        return int(float(self.beta[0]))
-
-class HomeostaticSleepDrive:
-    # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
-
-    def __init__(self, myCycle):
-        self.name = "HSD"
-
-        self.h = float(myCycle["h"])
-        self.H_max = float(myCycle["H_max"])
-        self.tau_hw = float(myCycle["tau_hw"])
-        self.tau_hs = float(myCycle["tau_hs"])
-        #self.f_X = myCycle["f_X"]
-        self.theta_X = float(myCycle["theta_X"])
-
-        self.connections = []
-
-        print('HomeostaticSleepDrive object: ', self.name, ' created')
-
-
-    def setNextStep(self, dt):
-        self.h = self.h+dt*self.getH()
-
-
-    def getH(self):
-        return (self.H_max-self.h)/self.tau_hw*self.heaviside(self.getSourceFR()-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR())
-
-    def getSourceFR(self):
-        if len(self.connections) > 0:
-            return self.connections[0].getConnectVal()
-
-    def heaviside(self,X):
-        if(X >= 0):
-            return 1
-        else:
-            return 0
-
-
-class Connection:
-    # creation of the connections class, which manages the connections between the different populations (manages the concentrations and associated weights)
-
-    def __init__(self, type, source, target, weight) :
-        self.type = type
-        self.source = source
-        self.target = target
-        self.weight = weight
-
-        print('Connection object',self.source.name ,'-',self.target.name ,'created')
-
-    def getConnectVal(self):
-        if self.type == "NP-NP":
-            return self.source.C * self.weight
-        if self.type == "HSD-NP":
-            return self.source.h * self.weight
-        if self.type == "NP-HSD":
-            return self.source.F
