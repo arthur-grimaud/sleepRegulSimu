@@ -115,7 +115,7 @@ b.grid(column=0, row=4)
 
 b = Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)
 b.grid(column=0, row=0)
-b = Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar(runMenu).grid(column=0, row=2),width=25)
+b = Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar().grid(column=0, row=2),width=25)
 b.grid(column=0, row=1)
 
 #--------------Visualization menu widgets-------------------

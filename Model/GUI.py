@@ -4,6 +4,8 @@ from graphviz import Digraph
 
 class NetworkGUI:
 
+    #---------------Display Compartements Parametiers-----------------------
+
     def displayCompParam(self,window):
 
         i = 0
@@ -51,20 +53,45 @@ class NetworkGUI:
         return compFrame
 
 
-    def displayCompVar(self,window):
+    #---------------Display Compartements Variables for Recorders  /!\ -----------------------
 
-        i = 0
-        frame = Frame (window)
-        for comp in self.compartments.values():
-            i += 1
-            lbl = Label(frame, text=comp.name)
-            lbl.grid(column=0, row=i)
-            cb = Checkbutton(frame, text = "FiringRate", width = 20)
-            cb.grid(column=1, row=i)
-            cb = Checkbutton(frame, text = "Concentration", width = 20)
-            cb.grid(column=2, row=i)
+    def displayCompVar(self):
+        window = Tk()
+        var = 0
+        cb = Checkbutton(window, text = "FiringRate", width = 20, variable=var, onvalue=["wake","F"], offvalue=0).grid(column=1, row=0)
+        b = Button(window, text="Create Compartment", command=lambda: self.saveAndClose(var,window),width=25)
+        b.grid(column=2, row=0)
+        window.mainloop()
 
-        return frame
+        # varToSave = [[]]
+        #
+        #
+        # window = Tk()
+        # i = 0
+        #
+        # for compKey, comp in self.compartments.items():
+        #     #varToSave.append([])
+        #     i += 1
+        #     lbl = Label(window, text=comp.name)
+        #     lbl.grid(column=0, row=i)
+        #     cb = Checkbutton(window, text = "FiringRate", width = 20, variable=varToSave[0], onvalue=[str(compKey),"F"], offvalue=0)
+        #     cb.grid(column=1, row=i)
+        #     cb = Checkbutton(window, text = "Concentration", width = 20, variable=varToSave[0], onvalue=[str(compKey),"C"], offvalue=0)
+        #     cb.grid(column=2, row=i)
+        #
+        # b = Button(window, text="Create Compartment", command=lambda: self.saveAndClose(varToSave,window),width=25)
+        # b.grid(column=2, row=0)
+        #
+        # window.mainloop()
+
+
+
+    def saveAndClose(self,param,window):
+        self.results = param
+        window.destroy()
+        print(self.results)
+
+
 
 
     def getCreationWindow(self):   #Temporary implementation
@@ -82,8 +109,7 @@ class NetworkGUI:
             txt.grid(column=1, row=i)
 
 
-        b = Button(creaWin, text="Create Compartment", command=lambda: self.CreateObjFromCreationWindow(creaWin),width=25)
-        b.grid(column=2, row=0)
+        b = Button(creaWin, text="Create Compartment", command=lambda: self.CreateObjFromCreationWindow(creaWin),width=25).grid(column=2, row=0)
 
         creaWin.mainloop()
 

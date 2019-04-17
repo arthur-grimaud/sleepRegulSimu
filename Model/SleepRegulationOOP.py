@@ -6,6 +6,7 @@ from tkinter import *
 import math
 from graphviz import Digraph
 from GUI import NetworkGUI
+import csv
 
 
 class Network(NetworkGUI):
@@ -35,19 +36,45 @@ class Network(NetworkGUI):
     #Run simulation methods
     def runSim(self):
         currT = self.t
-        self.setRecorders()
+        tempResults=[[],[]]
+        #self.setRecorders()
         while (currT < self.T*self.res):
             # print(currT)
-            # print(float(self.compartments["wake"].F))
-            self.recorders()
+            print(float(self.compartments["wake"].F))
+            #self.recorders()
+
+            tempResults[0].append(currT)
+            tempResults[1].append(self.getHypno())
+
             self.nextStep()
             currT += 1
 
-        print(self.results)
+        print(tempResults)
+        self.writeInFile(tempResults)
 
     def nextStep(self): #call next step method in each compartments
         for c in self.compartments .values():
             c.setNextStep(self.dt)
+
+    #---------Hypno----------------
+
+    def getHypno(self):
+        if self.compartments["wake"].C < 0.4 :
+            print(0.5)
+            return 0.5
+        elif self.compartments["REM"].C > 0.4 :
+            print(0)
+            return 0
+        else :
+            print(1)
+            return 1
+
+
+    def writeInFile(self,data):
+        with open('hypno.csv', 'w') as f:
+            writer = csv.writer(f, delimiter='\t')
+            writer.writerows(zip(data[0],data[1]))
+        quit()
 
     #---------Recorders-----------------
 
@@ -190,7 +217,7 @@ class Connection:
         self.type = type
         self.source = source
         self.target = target
-        self.weight = weight
+        self.weight = float(weight)
 
         print('Connection object',self.source.name ,'-',self.target.name ,'created')
 
