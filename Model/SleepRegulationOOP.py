@@ -13,7 +13,7 @@ class Network(NetworkGUI):
 
     def __init__(self,*args):
         self.compartments  = {}
-        self.results = {}
+        self.results = [[],[]]
 
         self.t = None
         self.T = None
@@ -24,75 +24,65 @@ class Network(NetworkGUI):
             self.t = int(args[0]["t"])
             self.T = int(args[0]["T"])
             self.res = float(args[0]["res"])
-            self.dt = float(args[0]["dt"]) / self.res
+            self.dt = 1E3 / self.res
 
 
     def setSimParam(self, simParam):
         self.t = int(simParam["t"])
         self.T = int(simParam["T"])
         self.res = float(simParam["res"])
-        self.dt = float(simParam["dt"]) / self.res
+        self.dt = 1E3 / self.res
 
     #Run simulation methods
     def runSim(self):
-        currT = self.t
-        tempResults=[[],[]]
-        #self.setRecorders()
-        while (currT < self.T*self.res):
-            # print(currT)
-            print(float(self.compartments["wake"].F))
-            #self.recorders()
+        self.initResults()
 
-            tempResults[0].append(currT)
-            tempResults[1].append(self.getHypno())
+        while (self.t < self.T*self.res):
+            if self.t%20000 == 0:
+                print(math.floor((100*self.t)/(self.T*self.res)),"%")
+                self.results[0].append(self.t)
+                self.results[1].append(self.getHypno())
+                self.getAndSaveRecorders()
 
             self.nextStep()
-            currT += 1
+            self.t += 1
 
-        print(tempResults)
-        self.writeInFile(tempResults)
+        self.writeInFile(self.results)
 
     def nextStep(self): #call next step method in each compartments
         for c in self.compartments .values():
-            c.setNextStep(self.dt)
+            c.setNextStep(self.dt, "Euler")
 
-    #---------Hypno----------------
 
+    #-------------Hypno------------------
     def getHypno(self):
         if self.compartments["wake"].C < 0.4 :
-            print(0.5)
             return 0.5
         elif self.compartments["REM"].C > 0.4 :
-            print(0)
             return 0
         else :
-            print(1)
             return 1
 
-
+    #--------------write------------------
     def writeInFile(self,data):
-        with open('hypno.csv', 'w') as f:
+        with open('results.csv', 'w') as f:
             writer = csv.writer(f, delimiter='\t')
-            writer.writerows(zip(data[0],data[1]))
-        quit()
+            writer.writerows(zip(*data))
+
+        f.close()
 
     #---------Recorders-----------------
+    def initResults(self):
+        for c in self.compartments.values():
+            for var in c.recorder():
+                self.results.append([])
 
-    def setRecorders(self):
-        self.results["wake_F"] =[]
-        self.results["NREM_F"] =[]
-
-
-    def getRecordersParam(self):
-        # param =[]
-        # for c in self.compartements:
-        #     param.append()
-        return [["wake","F"],["NREM","F"]]
-
-    def recorders(self):
-        for var in self.getRecordersParam():
-            key = var[0]+"_"+var[1]
-            self.results.setdefault(key, []).append(float(getattr(self.compartments[var[0]],var[1])))
+    def getAndSaveRecorders(self):
+        i=2
+        for c in self.compartments.values():
+            for var in c.recorder():
+                self.results[i].append(var)
+                i+=1
 
 
     #Network modification methods
@@ -146,16 +136,40 @@ class NeuronalPopulation :
         self.gamma = float(myPopulation["gamma"])
         self.tau_NT = float(myPopulation["tau_NT"])
 
+        #Equation for RK4
+
+        # self.dF = RK4(lambda t, y: t*getFR(y))
+        # self.dF = RK4(lambda t, y: t*getI(y))
+
         print('NeuronalPopulation object: ', self.name, ' created')
 
+    def RK4(self, f):
+        return lambda y, dt: (
+                lambda dy1: (
+                lambda dy2: (
+                lambda dy3: (
+                lambda dy4: (dy1 + 2*dy2 + 2*dy3 + dy4)/6
+            )( dt * f( y + dy3   ) )
+    	    )( dt * f( y + dy2/2 ) )
+    	    )( dt * f( y + dy1/2 ) )
+    	    )( dt * f( y         ) )
 
-    def setNextStep(self, dt):
-        self.F = self.F+dt*self.getFR()
-        self.C = self.C+dt*self.getC()
+    def setNextStep(self, dt, method):
+
+        if method == "Euler":
+            self.F = self.F+dt*self.getFR()
+            self.C = self.C+dt*self.getC()
+        if method == "RK4":
+            self.dF = self.RK4(lambda y: self.getFR())
+            self.dC = self.RK4(lambda y: self.getC())
+
+            self.F = self.F+self.dF( self.F, dt )
+            self.C = self.C+self.dC( self.C, dt )
 
 
     def getFR(self): #differential equation of the firing rate
         return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
+
     def getI(self):
         result = 0
         for c in self.connections:
@@ -174,6 +188,9 @@ class NeuronalPopulation :
 
         return int(float(self.beta[0]))
 
+    def recorder(self):
+        return [self.F,self.C]
+
 class HomeostaticSleepDrive:
     # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
 
@@ -189,15 +206,32 @@ class HomeostaticSleepDrive:
 
         self.connections = []
 
+        # self.dh = RK4(lambda t, y: t*getH(y))
+
         print('HomeostaticSleepDrive object: ', self.name, ' created')
 
 
-    def setNextStep(self, dt):
-        self.h = self.h+dt*self.getH()
+    def RK4(self, f):
+        return lambda y, dt: (
+                lambda dy1: (
+                lambda dy2: (
+                lambda dy3: (
+                lambda dy4: (dy1 + 2*dy2 + 2*dy3 + dy4)/6
+            )( dt * f( y + dy3   ) )
+    	    )( dt * f( y + dy2/2 ) )
+    	    )( dt * f( y + dy1/2 ) )
+    	    )( dt * f( y         ) )
+
+    def setNextStep(self, dt, method):
+        if method == "Euler":
+            self.h = self.h+dt*self.getH()
+        if method == "RK4":
+            self.dh = self.RK4(lambda y: self.getH())
+            self.h = self.dh( self.h, dt )
 
 
     def getH(self):
-        return (self.H_max-self.h)/self.tau_hw*self.heaviside(self.getSourceFR()-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR())
+        return float((self.H_max-self.h)/self.tau_hw*self.heaviside(self.getSourceFR()-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR()))
 
     def getSourceFR(self):
         if len(self.connections) > 0:
@@ -208,6 +242,9 @@ class HomeostaticSleepDrive:
             return 1
         else:
             return 0
+
+    def recorder(self):
+        return [self.h]
 
 
 class Connection:
@@ -228,169 +265,3 @@ class Connection:
             return self.source.h * self.weight
         if self.type == "NP-HSD":
             return self.source.F
-
-
-class NetworkGUI:
-    def __init__(self) :
-        pass
-
-    def displayCompParam(self,window):
-
-        i = 0
-        objFrame = Frame (window)
-        for comp in self.compartments.values():
-            i += 1
-            self.getCompartmentFrame(comp,objFrame).grid(column=i, row=0)
-        return objFrame
-
-
-    def getCompartmentFrame(self, comp, frame):
-
-        i = 0
-        compFrame = Frame (frame)
-
-        lbl = Label(compFrame, text=comp.name)
-        lbl.config(font=("Courier", 15))
-        lbl.grid(column=0, row=0)
-
-        for attr, value in comp.__dict__.items():
-
-            if isinstance(value, list) and len(value) > 0 and isinstance(value[0], Connection): #Si liste de connection
-                for c in value:
-                    i += 1
-                    lbl = Label(compFrame, text="connection: ")
-                    lbl.grid(column=0, row=i)
-                    txt = Entry(compFrame, width=10)
-                    txt.insert(END, c.source.name)
-                    txt.grid(column=1, row=i)
-                    txt = Entry(compFrame, width=10)
-                    txt.insert(END, c.target.name)
-                    txt.grid(column=2, row=i)
-                    txt = Entry(compFrame, width=10)
-                    txt.insert(END, c.weight)
-                    txt.grid(column=3, row=i)
-            else:
-                i += 1
-                lbl = Label(compFrame, text=attr)
-                lbl.grid(column=0, row=i)
-                txt = Entry(compFrame, width=10)
-                txt.insert(END, value)
-                txt.grid(column=1, row=i)
-
-
-        return compFrame
-
-
-    def displayCompVar(self,window):
-
-        i = 0
-        frame = Frame (window)
-        for comp in self.compartments.values():
-            i += 1
-            lbl = Label(frame, text=comp.name)
-            lbl.grid(column=0, row=i)
-            cb = Checkbutton(frame, text = "FiringRate", width = 20)
-            cb.grid(column=1, row=i)
-            cb = Checkbutton(frame, text = "Concentration", width = 20)
-            cb.grid(column=2, row=i)
-
-        return frame
-
-
-    def getCreationWindow(self):   #Temporary implementation
-
-        creaWin = Tk()
-
-        i = 0
-
-        for attr, value in self.compartments["NREM"].__dict__.items():
-            i+=1
-            lbl = Label(creaWin, text=attr)
-            lbl.grid(column=0, row=i)
-            txt = Entry(creaWin, width=10)
-            txt.insert(END, "0")
-            txt.grid(column=1, row=i)
-
-
-        b = Button(creaWin, text="Create Compartment", command=lambda: self.CreateObjFromCreationWindow(creaWin),width=25)
-        b.grid(column=2, row=0)
-
-        creaWin.mainloop()
-
-
-    def getCreationWindowConnect(self):   #Temporary implementation
-
-        creaWin = Tk()
-
-        #source
-        lbl = Label(creaWin, text="source")
-        lbl.grid(column=0, row=0)
-        txt = Entry(creaWin, width=10)
-        txt.insert(END, "0")
-        txt.grid(column=1, row=0)
-        #target
-        lbl = Label(creaWin, text="target")
-        lbl.grid(column=0, row=1)
-        txt = Entry(creaWin, width=10)
-        txt.insert(END, "0")
-        txt.grid(column=1, row=1)
-        #weight
-        lbl = Label(creaWin, text="weight")
-        lbl.grid(column=0, row=2)
-        txt = Entry(creaWin, width=10)
-        txt.insert(END, "0")
-        txt.grid(column=1, row=2)
-        #type
-        lbl = Label(creaWin, text="type")
-        lbl.grid(column=0, row=3)
-        txt = Entry(creaWin, width=10)
-        txt.insert(END, "0")
-        txt.grid(column=1, row=3)
-
-
-        b = Button(creaWin, text="Create Connection", command=lambda: self.CreateObjFromCreationWindowConnect(creaWin),width=25)
-        b.grid(column=0, row=5)
-
-        creaWin.mainloop()
-
-
-    def CreateObjFromCreationWindow(self, window):   #Temporary implementation
-
-        allWidgets = window.winfo_children() #get all widgets from the Object creation window
-        popParam = {}
-        for w in range(0, len(allWidgets)-2, 2):
-            popParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
-            print(allWidgets[w], allWidgets[w+1])
-        self.addNP(popParam)
-
-        window.destroy()
-
-
-    def CreateObjFromCreationWindowConnect(self, window):   #Temporary implementation
-
-        allWidgets = window.winfo_children() #get all widgets from the Object creation window
-        popParam = {}
-        for w in range(0, len(allWidgets)-1, 2):
-            popParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
-            print(allWidgets[w], allWidgets[w+1])
-        self.addNP(popParam)
-
-        window.destroy()
-
-
-
-
-    def displayGraph(self):
-        dot = Digraph()
-
-        for cName in self.compartments .keys():
-            dot.node(str(cName),str(cName))
-
-        for cObj in self.compartments .values():
-            for conn in cObj.connections:
-                    if conn.weight < 0:
-                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
-                    if conn.weight > 0:
-                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
-
-        dot.render('test-output.gv', view=True)

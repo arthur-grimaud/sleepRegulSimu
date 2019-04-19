@@ -186,7 +186,7 @@ class NetworkGUI:
             for conn in cObj.connections:
                     if conn.weight < 0:
                         dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
-                    if conn.weight > 0:
+                    if conn.weight >= 0:
                         dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
 
         dot.render('test-output.gv', view=True)

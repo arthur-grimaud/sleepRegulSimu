@@ -42,7 +42,7 @@ def loadModel():
             network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_source]["g_NT_pop_list"][i])
             i+=1
     network.addNPConnection("HSD-NP","HSD","NREM",1.5)
-    network.addNPConnection("NP-HSD","NREM","HSD",0)
+    network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
 
 
