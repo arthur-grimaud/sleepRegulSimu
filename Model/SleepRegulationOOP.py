@@ -22,7 +22,7 @@ class Network(NetworkGUI):
 
 
         self.compartments  = {} #Ditionnary containing all the compartments objects
-        self.results = [[],[]]  #Data storage
+        self.results = []  #Data storage
 
         #Simulation parameters
         self.t = None # Used to store the number of time steps done
@@ -52,8 +52,6 @@ class Network(NetworkGUI):
         while (self.t < self.T*self.res): # Main loop
             if self.t%20000 == 0: #Each x milliseconds
                 print(math.floor((100*self.t)/(self.T*self.res)),"%")
-                self.results[0].append(self.t) # variable storage
-                self.results[1].append(self.getHypno()) # variable storage
                 self.getAndSaveRecorders() # variable storage
 
             self.nextStep() # call next step
@@ -87,16 +85,24 @@ class Network(NetworkGUI):
     #-----------------------------Recorders--------------------------------------#
 
     def initResults(self): #Set the correct number of Sublist in self.results in function of the number of variable to be saved
+        for v in self.recorder():
+            self.results.append([])
         for c in self.compartments.values():
             for var in c.recorder():
                 self.results.append([])
 
     def getAndSaveRecorders(self): #Call the recorders in each compartements
-        i=2
+        i=0
+        for var in self.recorder():
+            self.results[i].append(var)
+            i+=1
         for c in self.compartments.values():
             for var in c.recorder():
                 self.results[i].append(var)
                 i+=1
+
+    def recorder(self):
+        return[self.t,self.getHypno()]
 
     #-------------------------Network modification methods------------------------------#
 
