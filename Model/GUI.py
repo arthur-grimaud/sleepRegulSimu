@@ -1,11 +1,20 @@
+#!bin/python
+#-*-coding:utf-8-*-
+
+#######################IMPORTATIONS########################
+
+#Calculation
 import numpy as np
+#Gaphical interface
 from tkinter import *
+#Graph generation
 from graphviz import Digraph
+
+
 
 class NetworkGUI:
 
-    #---------------Display Compartements Parametiers-----------------------
-
+    #---------------Display Compartements Parameters-----------------------
     def displayCompParam(self,window):
 
         i = 0
@@ -14,7 +23,6 @@ class NetworkGUI:
             i += 1
             self.getCompartmentFrame(comp,objFrame).grid(column=i, row=0)
         return objFrame
-
 
     def getCompartmentFrame(self, comp, frame):
 
@@ -52,7 +60,6 @@ class NetworkGUI:
 
         return compFrame
 
-
     #---------------Display Compartements Variables for Recorders  /!\ -----------------------
 
     def displayCompVar(self):
@@ -63,36 +70,13 @@ class NetworkGUI:
         b.grid(column=2, row=0)
         window.mainloop()
 
-        # varToSave = [[]]
-        #
-        #
-        # window = Tk()
-        # i = 0
-        #
-        # for compKey, comp in self.compartments.items():
-        #     #varToSave.append([])
-        #     i += 1
-        #     lbl = Label(window, text=comp.name)
-        #     lbl.grid(column=0, row=i)
-        #     cb = Checkbutton(window, text = "FiringRate", width = 20, variable=varToSave[0], onvalue=[str(compKey),"F"], offvalue=0)
-        #     cb.grid(column=1, row=i)
-        #     cb = Checkbutton(window, text = "Concentration", width = 20, variable=varToSave[0], onvalue=[str(compKey),"C"], offvalue=0)
-        #     cb.grid(column=2, row=i)
-        #
-        # b = Button(window, text="Create Compartment", command=lambda: self.saveAndClose(varToSave,window),width=25)
-        # b.grid(column=2, row=0)
-        #
-        # window.mainloop()
-
-
 
     def saveAndClose(self,param,window):
         self.results = param
         window.destroy()
         print(self.results)
 
-
-
+    #-----------Display window for the creation new compartment/connection------------
 
     def getCreationWindow(self):   #Temporary implementation
 
@@ -108,11 +92,9 @@ class NetworkGUI:
             txt.insert(END, "0")
             txt.grid(column=1, row=i)
 
-
         b = Button(creaWin, text="Create Compartment", command=lambda: self.CreateObjFromCreationWindow(creaWin),width=25).grid(column=2, row=0)
 
         creaWin.mainloop()
-
 
     def getCreationWindowConnect(self):   #Temporary implementation
 
@@ -149,7 +131,6 @@ class NetworkGUI:
 
         creaWin.mainloop()
 
-
     def CreateObjFromCreationWindow(self, window):   #Temporary implementation
 
         allWidgets = window.winfo_children() #get all widgets from the Object creation window
@@ -173,8 +154,7 @@ class NetworkGUI:
 
         window.destroy()
 
-
-
+    #------------------------------Graph generation-----------------------------------------
 
     def displayGraph(self):
         dot = Digraph()
