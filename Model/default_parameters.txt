@@ -56,7 +56,7 @@ H_max = 1.0
 tau_hw = 34830E3
 tau_hs = 30600E3
 f_X = wake
-theta_X = 2.0
+theta_X = 2.0E-3
 +
 
 // lines beginning with an "#" corresponds to the simulation parameters
