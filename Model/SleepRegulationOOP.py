@@ -30,6 +30,9 @@ class Network(NetworkGUI):
         self.res = None # Iterations per seconds
         self.dt = None # Time step in milliseconds
 
+        #RK4 coefficient
+        self.A = [0.5, 0.5, 1.0, 1.0]
+
         if len(args) == 1: #If the parameters dictionnary has been given to the constructor
             self.t = int(args[0]["t"])
             self.T = int(args[0]["T"])
@@ -44,17 +47,24 @@ class Network(NetworkGUI):
         self.res = float(simParam["res"])
         self.dt = 1E3 / self.res
 
+
     #------------------------------Run simulation----------------------------------#
 
     def runSim(self):
         self.initResults()
 
         while (self.t < self.T*self.res): # Main loop
-            if self.t%20000 == 0: #Each x milliseconds
+            if self.t%1000 == 0: #Each x steps
                 print(math.floor((100*self.t)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
-            self.nextStep() # call next step
+                print("wake",self.compartments["wake"].F[0])
+                print("wakeC",self.compartments["wake"].C[0])
+                print("nremC",self.compartments["NREM"].C[0])
+                print("remC",self.compartments["REM"].C[0])
+                #print("rem",self.compartments["REM"].F[0])
+
+            self.nextStepRK4() # call next step
             self.t += 1 #
 
         self.writeInFile(self.results) # Write results in a file
@@ -63,12 +73,20 @@ class Network(NetworkGUI):
         for c in self.compartments .values():
             c.setNextStep(self.dt, "Euler")
 
+    def nextStepRK4(self):
+        for N in range(4):
+            for c in self.compartments .values():
+                c.setNextSubStepRK4(self.dt,N,self.A[N])
+
+        for c in self.compartments .values():
+            c.setNextStepRK4()
+
     #-----------------------------Hypnogram--------------------------------------#
 
     def getHypno(self): #Return the current state of the model
-        if self.compartments["wake"].C < 0.4 :
+        if self.compartments["wake"].C[0] < 0.4 :
             return 0.5
-        elif self.compartments["REM"].C > 0.4 :
+        elif self.compartments["REM"].C[0] > 0.4 :
             return 0
         else :
             return 1
@@ -145,8 +163,8 @@ class NeuronalPopulation :
         self.connections = []
 
         #initial conditions (Variables)
-        self.F = float(myPopulation["F"])
-        self.C  = float(myPopulation["C"])
+        self.F = [float(myPopulation["F"]),0,0,0,0]
+        self.C  = [float(myPopulation["C"]),0,0,0,0]
 
         #Firing rate parameters (Constants used in the FiringRate equation)
         self.F_max = float(myPopulation["F_max"])
@@ -181,6 +199,14 @@ class NeuronalPopulation :
 
     #-----------------------------------??------------------------------------#
 
+    def setNextSubStepRK4(self,dt,N,coef):
+        self.F[N+1] = self.F[0] + coef * dt * self.getFR(N)
+        self.C[N+1] = self.C[0] + coef * dt * self.getC(N)
+
+    def setNextStepRK4(self):
+        self.F[0] = (-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6
+        self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
+
     def setNextStep(self, dt, method): #Set the Popualtion variable
     #args: dt:Time step  / method:Method of ODE resolution used
         if method == "Euler":
@@ -195,31 +221,32 @@ class NeuronalPopulation :
 
     #---------------------------------Equations------------------------------------#
 
-    def getFR(self): #Equation of the firing rate
-        return ((self.F_max *(0.5*(1 + np.tanh((self.getI() - self.getBeta())/self.alpha)))) - self.F  )/self.tau_pop
+    def getFR(self,N): #Equation of the firing rate
 
-    def getI(self): #Get I from the connection in self.connections
+        return ((self.F_max *(0.5*(1 + np.tanh((self.getI(N) - self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop
+
+    def getI(self,N): #Get I from the connection in self.connections
         result = 0
         for c in self.connections:
             if c.type == "NP-NP":
-                result += c.getConnectVal()
+                result += c.getConnectVal(N)
         return result
 
-    def getC(self): #differential equation of the neurotransmitter concentration released by the population
-        return np.tanh((self.F/self.gamma) - self.C)/self.tau_NT
+    def getC(self,N): #differential equation of the neurotransmitter concentration released by the population
+        return (np.tanh(self.F[N+1]/self.gamma) - self.C[N])/self.tau_NT
 
-    def getBeta(self): #used to handle the homeostatic sleep drive
+    def getBeta(self,N): #used to handle the homeostatic sleep drive
         if len(self.beta) == 2 :
             for c in self.connections:
                 if c.type == "HSD-NP":
-                    return c.getConnectVal()
+                    return c.getConnectVal(N)
 
-        return int(float(self.beta[0]))
+        return float(self.beta[0])
 
     #---------------------------------Recorder------------------------------------#
 
     def recorder(self): # Return the variables of the population
-        return [self.F,self.C]
+        return [self.F[0],self.C[0]]
 
 
 ########################HOMEOSTATICSLEEPDRIVE############################
@@ -232,7 +259,9 @@ class HomeostaticSleepDrive:
     def __init__(self, myCycle):
         self.name = "HSD"
 
-        self.h = float(myCycle["h"])
+        #variable
+        self.h = [float(myCycle["h"]),0,0,0,0,]
+
         self.H_max = float(myCycle["H_max"])
         self.tau_hw = float(myCycle["tau_hw"])
         self.tau_hs = float(myCycle["tau_hs"])
@@ -256,6 +285,12 @@ class HomeostaticSleepDrive:
     	    )( dt * f( y + dy1/2 ) )
     	    )( dt * f( y         ) )
 
+    def setNextSubStepRK4(self,dt,N,coef):
+        self.h[N+1] = self.h[0] + coef * dt * self.getH(N)
+
+    def setNextStepRK4(self):
+        self.h[0] = (-3*self.h[0] + 2*self.h[1] + 4*self.h[2] + 2*self.h[3] + self.h[4])/6
+
     def setNextStep(self, dt, method):
         if method == "Euler":
             self.h = self.h+dt*self.getH()
@@ -265,13 +300,13 @@ class HomeostaticSleepDrive:
 
     #---------------------------------Equations------------------------------------#
 
-    def getH(self):
-        print(self.theta_X-self.getSourceFR())
-        return float((self.H_max-self.h)/self.tau_hw*self.heaviside(self.getSourceFR()-self.theta_X) - self.h/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR()))
+    def getH(self,N):
+        #print(self.theta_X-self.getSourceFR())
+        return float((self.H_max-self.h[N])/self.tau_hw*self.heaviside(self.getSourceFR(N)-self.theta_X) - self.h[N]/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR(N)))
 
-    def getSourceFR(self):
+    def getSourceFR(self,N):
         if len(self.connections) > 0:
-            return self.connections[0].getConnectVal()
+            return self.connections[0].getConnectVal(N)
 
     def heaviside(self,X):
         if(X >= 0):
@@ -282,7 +317,7 @@ class HomeostaticSleepDrive:
     #---------------------------------Recorder------------------------------------#
 
     def recorder(self):
-        return [self.h]
+        return [self.h[0]]
 
 
 #############################CONNECTION################################
@@ -300,10 +335,10 @@ class Connection:
 
         print('Connection object',self.source.name ,'-',self.target.name ,'created')
 
-    def getConnectVal(self):
+    def getConnectVal(self,N):
         if self.type == "NP-NP":
-            return self.source.C * self.weight
+            return self.source.C[N] * self.weight
         if self.type == "HSD-NP":
-            return self.source.h * self.weight
+            return self.source.h[N] * self.weight
         if self.type == "NP-HSD":
-            return self.source.F
+            return self.source.F[N]

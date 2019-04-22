@@ -3,8 +3,8 @@
 // variable g is the weight applied to the concentration of the corresponding population in variable pop_list
 
 * population = wake
-F = 6.0E-3
-F_max = 6.5E-3
+F = 6.0
+F_max = 6.5
 alpha = 0.5
 beta = -0.4
 tau_pop = 1500E3
@@ -12,14 +12,14 @@ g_NT_pop_list = -2.0 -4.0
 pop_list = NREM REM
 
 concentration = E
-C = 0.9E-3
-gamma = 5.0E-3
+C = 0.9
+gamma = 5.0
 tau_NT = 25E3
 *
 
 * population = NREM
 F = 1E-3
-F_max = 5.0E-3
+F_max = 5.0
 alpha = 0.175
 beta = 1.5 homeostatic
 tau_pop = 600E3
@@ -28,14 +28,14 @@ pop_list = wake REM
 
 concentration = G
 C = 1E-3
-gamma = 4.0E-3
-tau_NT = 1E3
+gamma = 4.0
+tau_NT = 10E3
 *
 
 
 * population = REM
 F = 1E-3
-F_max = 5.0E-3
+F_max = 5.0
 alpha = 0.13
 beta = -0.9
 tau_pop = 60E3
@@ -44,8 +44,8 @@ pop_list = REM wake
 
 concentration = A
 C = 1E-3
-gamma = 2.0E-3
-tau_NT = 1E3
+gamma = 2.0
+tau_NT = 10E3
 *
 
 // lines beginning with an "+" corresponds to the instanciation of a cycle
@@ -56,14 +56,14 @@ H_max = 1.0
 tau_hw = 34830E3
 tau_hs = 30600E3
 f_X = wake
-theta_X = 2.0E-3
+theta_X = 2.0
 +
 
 // lines beginning with an "#" corresponds to the simulation parameters
 
 #
 t = 0
-T = 1
-res = 1E2
+T = 144000
+res = 50
 dt = 1E3
 #
