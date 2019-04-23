@@ -9,14 +9,10 @@ from manage_parameters import *
 from SleepRegulationOOP import NeuronalPopulation
 from SleepRegulationOOP import HomeostaticSleepDrive
 from SleepRegulationOOP import Network
+from graphique import *
 import os
 
-
-
-
-
 network = Network()
-
 
 def loadModel():
     global network
@@ -44,6 +40,8 @@ def loadModel():
     network.addNPConnection("HSD-NP","HSD","NREM",1.5)
     network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
+
+    network.addInjection("NREM",0.8,3600)
 
 
 
@@ -79,8 +77,6 @@ n.add(paramMenu, text='Parameters')
 n.add(runMenu, text='Run')
 n.add(visuMenu, text='Visualization')
 n.add(statMenu, text='Statistics')
-
-
 
 #-----------Main menu widgets---------------
 
@@ -120,9 +116,7 @@ b.grid(column=0, row=1)
 
 #--------------Visualization menu widgets-------------------
 
-lbl = Label(visuMenu, text="Not available yet")
-lbl.config(font=("Courier", 30))
-lbl.grid(column=0, row=0)
+b = Button(visuMenu, text="GenerateGraph", command=lambda: createGraph(network),width=25).grid(column=0, row=0)
 
 #--------------Visualization menu widgets-------------------
 

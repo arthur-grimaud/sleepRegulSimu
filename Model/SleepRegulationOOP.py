@@ -20,52 +20,60 @@ class Network(NetworkGUI):
     #-----------------------------------Constructor------------------------------------#
     def __init__(self,*args):
 
-
         self.compartments  = {} #Ditionnary containing all the compartments objects
         self.results = []  #Data storage
+        self.injections = [] #injection storage
 
         #Simulation parameters
-        self.t = None # Used to store the number of time steps done
+        self.step = None # Used to store the number of time steps done
         self.T = None # Simulation time in seconds
         self.res = None # Iterations per seconds
         self.dt = None # Time step in milliseconds
+        self.t = 0
 
         #RK4 coefficient
         self.A = [0.5, 0.5, 1.0, 1.0]
 
         if len(args) == 1: #If the parameters dictionnary has been given to the constructor
-            self.t = int(args[0]["t"])
+            self.step = int(args[0]["t"])
             self.T = int(args[0]["T"])
             self.res = float(args[0]["res"])
             self.dt = 1E3 / self.res
+            self.t = 0
 
     #-----------------------------------Setter------------------------------------#
 
     def setSimParam(self, simParam):  #Set the simulation parameters from a dictionnary
-        self.t = int(simParam["t"])
+        self.step = int(simParam["t"])
         self.T = int(simParam["T"])
         self.res = float(simParam["res"])
         self.dt = 1E3 / self.res
-
+        self.t = 0
 
     #------------------------------Run simulation----------------------------------#
 
     def runSim(self):
         self.initResults()
 
-        while (self.t < self.T*self.res): # Main loop
-            if self.t%1000 == 0: #Each x steps
-                print(math.floor((100*self.t)/(self.T*self.res)),"%")
+        while (self.step < self.T*self.res): # Main loop
+
+            if self.step%3000 == 0: #Each x steps
+                print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
-                print("wake",self.compartments["wake"].F[0])
+
+                print(self.t)
+                print("wakeF",self.compartments["wake"].F[0])
+                print("NREMF",self.compartments["NREM"].F[0])
+                print("REMF",self.compartments["REM"].F[0])
                 print("wakeC",self.compartments["wake"].C[0])
                 print("nremC",self.compartments["NREM"].C[0])
                 print("remC",self.compartments["REM"].C[0])
-                #print("rem",self.compartments["REM"].F[0])
 
             self.nextStepRK4() # call next step
-            self.t += 1 #
+
+            self.step += 1
+            self.t = math.floor(self.step/self.res) # current time since simulation time in sc
 
         self.writeInFile(self.results) # Write results in a file
 
@@ -122,6 +130,15 @@ class Network(NetworkGUI):
     def recorder(self):
         return[self.t,self.getHypno()]
 
+    #-----------------------------Injection--------------------------------------#
+
+    def setInjections(self):
+        for i in self.injections:
+            if i.time*self.res == self.step or i.injectionStarted:
+                i.SetQuantity()
+                i.target.C[0] = i.quantity
+                i.injectionStarted = True
+
     #-------------------------Network modification methods------------------------------#
 
     def addNP(self, populationParam): #Add an instance of NeuronalPopulation to the compartments dictionnary
@@ -133,6 +150,8 @@ class Network(NetworkGUI):
     def addNPConnection(self, type, sourceName, targetName, weight): #Add a connection object to the concerned compartment
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
+    def addInjection(self, targetName, quantity, time):
+        self.injections.append(Injection(self.compartments[targetName], quantity, time))
     #-------------------------------Debugging methods----------------------------------#
 
     def printAttrType(self,compID): #Print name,value,type of all attributs of a compartment.
@@ -184,19 +203,6 @@ class NeuronalPopulation :
 
         print('NeuronalPopulation object: ', self.name, ' created')
 
-    #-----------------------------------ODE resolver------------------------------------#
-
-    def RK4(self, f): #Runge-Kutta of the fourth order (NOT WORKING)
-        return lambda y, dt: (
-                lambda dy1: (
-                lambda dy2: (
-                lambda dy3: (
-                lambda dy4: (dy1 + 2*dy2 + 2*dy3 + dy4)/6
-            )( dt * f( y + dy3   ) )
-    	    )( dt * f( y + dy2/2 ) )
-    	    )( dt * f( y + dy1/2 ) )
-    	    )( dt * f( y         ) )
-
     #-----------------------------------??------------------------------------#
 
     def setNextSubStepRK4(self,dt,N,coef):
@@ -207,23 +213,12 @@ class NeuronalPopulation :
         self.F[0] = (-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6
         self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
 
-    def setNextStep(self, dt, method): #Set the Popualtion variable
-    #args: dt:Time step  / method:Method of ODE resolution used
-        if method == "Euler":
-            self.F = self.F+dt*self.getFR()
-            self.C = self.C+dt*self.getC()
-        if method == "RK4": #(NOT WORKING)
-            self.dF = self.RK4(lambda y: self.getFR())
-            self.dC = self.RK4(lambda y: self.getC())
-
-            self.F = self.F+self.dF( self.F, dt )
-            self.C = self.C+self.dC( self.C, dt )
 
     #---------------------------------Equations------------------------------------#
 
     def getFR(self,N): #Equation of the firing rate
 
-        return ((self.F_max *(0.5*(1 + np.tanh((self.getI(N) - self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop
+        return ((self.F_max *(0.5*(1 + np.tanh((self.getI(N) + self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop
 
     def getI(self,N): #Get I from the connection in self.connections
         result = 0
@@ -241,7 +236,7 @@ class NeuronalPopulation :
                 if c.type == "HSD-NP":
                     return c.getConnectVal(N)
 
-        return float(self.beta[0])
+        return -float(self.beta[0])
 
     #---------------------------------Recorder------------------------------------#
 
@@ -274,16 +269,6 @@ class HomeostaticSleepDrive:
 
         print('HomeostaticSleepDrive object: ', self.name, ' created')
 
-    def RK4(self, f):
-        return lambda y, dt: (
-                lambda dy1: (
-                lambda dy2: (
-                lambda dy3: (
-                lambda dy4: (dy1 + 2*dy2 + 2*dy3 + dy4)/6
-            )( dt * f( y + dy3   ) )
-    	    )( dt * f( y + dy2/2 ) )
-    	    )( dt * f( y + dy1/2 ) )
-    	    )( dt * f( y         ) )
 
     def setNextSubStepRK4(self,dt,N,coef):
         self.h[N+1] = self.h[0] + coef * dt * self.getH(N)
@@ -291,12 +276,6 @@ class HomeostaticSleepDrive:
     def setNextStepRK4(self):
         self.h[0] = (-3*self.h[0] + 2*self.h[1] + 4*self.h[2] + 2*self.h[3] + self.h[4])/6
 
-    def setNextStep(self, dt, method):
-        if method == "Euler":
-            self.h = self.h+dt*self.getH()
-        if method == "RK4":
-            self.dh = self.RK4(lambda y: self.getH())
-            self.h = self.dh( self.h, dt )
 
     #---------------------------------Equations------------------------------------#
 
@@ -342,3 +321,24 @@ class Connection:
             return self.source.h[N] * self.weight
         if self.type == "NP-HSD":
             return self.source.F[N]
+
+
+
+#############################Injection################################
+#   ....                                                              #
+#######################################################################
+
+
+
+class Injection:
+
+    def __init__(self, target, quantity, time) :
+        self.target = target # Compartment object
+        self.quantity = float(quantity) #amount of neurotransmitter
+        self.time = time #time at wich the injection occures (in seconds)
+        self.injectionStarted = False #true if injection has started
+
+        print('Injection of ',self.quantity ,' of ',self.target.concentration ,' in ',self.target.name, "planned at ",self.time," seconds" )
+
+    def SetQuantity(self):
+        self.quantity = self.quantity/1.5
