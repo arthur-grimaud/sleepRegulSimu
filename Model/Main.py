@@ -42,6 +42,7 @@ def loadModel():
     print("### Connections OK ###\n")
 
     network.addInjection("NREM",0.8,3600)
+    network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
 
 
@@ -104,7 +105,7 @@ b.grid(column=0, row=3)
 b = Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
 b.grid(column=0, row=0)
 
-b = Button(paramMenu, text="Add NP (WIP)", command=lambda: network.getCreationWindow(),width=25)
+b = Button(paramMenu, text="Add NP (WIP)", command=lambda: network.addObjToModel(network),width=25)
 b.grid(column=0, row=4)
 
 #--------------Run menu widgets-------------------
@@ -112,7 +113,7 @@ b.grid(column=0, row=4)
 b = Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)
 b.grid(column=0, row=0)
 b = Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar().grid(column=0, row=2),width=25)
-b.grid(column=0, row=1)
+b.grid(column=0, row=2)
 
 #--------------Visualization menu widgets-------------------
 
