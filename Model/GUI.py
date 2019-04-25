@@ -83,11 +83,19 @@ class NetworkGUI:
             self.res = float(res.get())
             print (res.get())
 
+        def callbackSaveRate(saveRate):
+            self.saveRate = float(saveRate.get())
+            print (saveRate.get())
+
         T = StringVar()
         T.trace("w", lambda name, index, mode, T=T: callbackT(T))
 
         res = StringVar()
         res.trace("w", lambda name, index, mode, res=res: callbackres(res))
+
+        saveRate = StringVar()
+        saveRate.trace("w", lambda name, index, mode, saveRate=saveRate: callbackSaveRate(saveRate))
+
 
         frame = Frame(window)
 
@@ -100,6 +108,11 @@ class NetworkGUI:
         e = Entry(frame, textvariable=res)
         e.insert(END, self.res)
         e.grid(column=1, row=2)
+
+        lbl = Label(frame, text="Save Rate (in Steps)").grid(column=0, row=3)
+        e = Entry(frame, textvariable=saveRate)
+        e.insert(END, self.saveRate)
+        e.grid(column=1, row=3)
 
         return frame
 
@@ -166,7 +179,7 @@ class NetworkGUI:
             lbl = Label(frame, text="tau_NT").grid(column=0, row=9)
             ety = Entry(frame, width=10).grid(column=1, row=9)
 
-            b = Button(window, text="Create", command=lambda: self.readAndCreateComp(frame, window),width=25).grid(column=0, row=10)
+            b = Button(frame, text="Create", command=lambda: self.readAndCreateComp(frame, window, "NP"),width=25).grid(column=0, row=10)
 
         if selection == "Homeostatic Sleep Drive":
 
@@ -185,7 +198,7 @@ class NetworkGUI:
             lbl = Label(frame, text="theta_X").grid(column=0, row=4)
             ety = Entry(frame, width=10).grid(column=1, row=4)
 
-            b = Button(window, text="Create", command=lambda: self.readAndCreateComp(frame, window),width=25).grid(column=0, row=10)
+            b = Button(frame, text="Create", command=lambda: self.readAndCreateComp(frame, window, "HSD"),width=25).grid(column=0, row=10)
 
         if selection == "Connection":
 
@@ -193,7 +206,7 @@ class NetworkGUI:
             target = StringVar()
             source = StringVar()
             type = StringVar()
-            weight = StringVar()
+            weightVal = 0
 
             def changeTarget(new):
                 target = new
@@ -222,31 +235,36 @@ class NetworkGUI:
             optMenu = OptionMenu(frame, target, *compsNames, command=changeTarget).grid(column=1, row=2)
 
             lbl = Label(frame, text="theta_X").grid(column=0, row=3)
-            self.w = Entry(frame).grid(column=1, row=3)
+            e = Entry(frame)
+            e.grid(column=1, row=3)
 
-            b = Button(frame, text="Create", command=lambda: self.addNPConnection(type, source, target, self.getEntry(frame) ),width=25).grid(column=0, row=4)
+            b = Button(frame, text="Create", command=lambda: self.addNPConnection(type.get(), source.get(), target.get(), e.get() ),width=25).grid(column=0, row=4)
             #b = Button(frame, text="Create", command=lambda: self.getEntry(frame) ,width=25).grid(column=0, row=4)
 
         return frame
 
-    def readAndCreateComp(self,frame,window):
+    def readAndCreateComp(self,frame,window,compType):
 
         allWidgets = frame.winfo_children() #get all widgets from the Object creation window
-        popParam = {}
+        compParam = {}
         for w in range(0, len(allWidgets), 2):
-            popParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
+            compParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
             print(allWidgets[w], allWidgets[w+1])
-        self.addNP(popParam)
+
+        if compType == "NP":
+            self.addNP(compParam)
+        elif compType == "HSD":
+            self.addHSD(compParam)
 
         window.destroy()
 
-    def getEntry(self, frame):
-        allWidgets = frame.winfo_children()
-        for w in  range(len(allWidgets)):
-            print(allWidgets[w])
-            if isinstance(allWidgets[w], Entry):
-                a = str(allWidgets[w].get())
-                return a.get()  ####PROBLEM:return as stringvar type but is a string##### :o(
+    # def getEntry(self, frame):
+    #     allWidgets = frame.winfo_children()
+    #     for w in  range(len(allWidgets)):
+    #         print(allWidgets[w])
+    #         if isinstance(allWidgets[w], Entry):
+    #             a = str(allWidgets[w].get())
+    #             return a.get()  ####PROBLEM:return as stringvar type but is a string##### :o(
 
 
 

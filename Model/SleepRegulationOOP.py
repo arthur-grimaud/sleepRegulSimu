@@ -29,6 +29,7 @@ class Network(NetworkGUI):
         self.T = None # Simulation time in seconds
         self.res = None # Iterations per seconds
         self.dt = None # Time step in milliseconds
+        self.saveRate = 100 #Save rate in number of steps
         self.t = 0
 
         #RK4 coefficient
@@ -55,9 +56,11 @@ class Network(NetworkGUI):
     def runSim(self):
         self.initResults()
 
+        self.setInjections()
+
         while (self.step < self.T*self.res): # Main loop
 
-            if self.step%3000 == 0: #Each x steps
+            if self.step%self.saveRate == 0: #Each x steps
                 print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
@@ -74,6 +77,7 @@ class Network(NetworkGUI):
 
             self.step += 1
             self.t = math.floor(self.step/self.res) # current time since simulation time in sc
+
 
         self.writeInFile(self.results) # Write results in a file
 
@@ -329,7 +333,6 @@ class Connection:
 #######################################################################
 
 
-
 class Injection:
 
     def __init__(self, target, quantity, time) :
@@ -341,4 +344,6 @@ class Injection:
         print('Injection of ',self.quantity ,' of ',self.target.concentration ,' in ',self.target.name, "planned at ",self.time," seconds" )
 
     def SetQuantity(self):
-        self.quantity = self.quantity/1.5
+        self.quantity = self.quantity/1.1
+        if quantity < 0.01:
+            self.injectionStarted = False
