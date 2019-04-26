@@ -60,16 +60,19 @@ def createGraph(data):
     plt.show()
 
 
-results = readCSV('results.csv')
-data = [
-    results['time'],
-    results['hypnogram'],
-    results['wake_F'],
-    results['wake_C'],
-    results['NREM_F'],
-    results['NREM_C'],
-    results['REM_F'],
-    results['REM_C'],
-    results['H']
-]
-createGraph(data)
+def GraphFromCSV(file) :
+    results = readCSV(file)
+    data = [
+        results['time'],
+        results['hypnogram'],
+        results['wake_F'],
+        results['wake_C'],
+        results['NREM_F'],
+        results['NREM_C'],
+        results['REM_F'],
+        results['REM_C'],
+        results['H']
+    ]
+    createGraph(data)
+
+# GraphFromCSV('results.csv')
