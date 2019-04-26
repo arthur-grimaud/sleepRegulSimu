@@ -24,6 +24,14 @@ def readCSV(file) :
     return results
 
 def createGraph(data):
+    
+    step_hour = 5
+    time_ms = []
+    time_h = []
+    for t in range(int(data[0][-1])) :
+        if t % (60*60*step_hour) == 0 :
+            time_ms.append(t)
+            time_h.append(int(t/(60*60)))
 
     # plot
     plt.figure(1)
@@ -31,7 +39,7 @@ def createGraph(data):
     sub1=plt.subplot(3,1,1)
     plt.plot(data[0],data[1],'black')
     plt.ylim(-0.5,1.5)
-    xticks([1800,3600,5400,7200],[0.5,1,1.5,2])
+    xticks(time_ms,time_h)
     yticks([0,0.5,1],['NREM','REM','Wake'])
     plt.xlabel('Time (h)')
     plt.ylabel('Hypnogram')
@@ -41,7 +49,7 @@ def createGraph(data):
     sub2=plt.plot(data[0],data[4],'r',label="F_N")
     sub2=plt.plot(data[0],data[6],'b',label="F_R")
     plt.ylim(0,7)
-    xticks([1800,3600,5400,7200],[0.5,1,1.5,2])
+    xticks(time_ms,time_h)
     plt.xlabel('Time (h)')
     plt.ylabel('Activity (Hz)')
     plt.legend(loc='best')
@@ -52,7 +60,8 @@ def createGraph(data):
     sub3=plt.plot(data[0],data[7],'b',label="C_A")
     sub3=plt.plot(data[0],data[8],'y',label="h")
     plt.ylim(0,1)
-    xticks([1800,3600,5400,7200],[0.5,1,1.5,2])
+    xticks(time_ms,time_h)
+
     plt.xlabel("Time (h)")
     plt.ylabel("Concentrations")
     plt.legend(loc='best')
