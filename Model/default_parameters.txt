@@ -61,9 +61,10 @@ theta_X = 2.0
 +
 
 // lines beginning with an "#" corresponds to the simulation parameters
+// during 24h (86400s)
 
 #
 t = 0
-T = 144000
+T = 86400
 res = 50
 #
