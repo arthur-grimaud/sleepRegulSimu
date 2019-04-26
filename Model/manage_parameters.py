@@ -60,39 +60,16 @@ def read_parameters(file) :
     return populations,cycles,simulation_parameters,connections
 
 
-def write_parameters(name_file,modele) :
+def write_parameters(name_file,network) :
     ### writes a file with the input parameters
     # creates a file following the same format as default_parameters.txt
 
     fic = open(name_file,"w")
 
-    for myPop in modele['populations'] :
-        fic.write("* population = "+myPop.name+"\n")
-        for parameter in vars(myPop) :
-            if isinstance(getattr(myPop,parameter),list) :
-                fic.write(parameter+" =")
-                for value in getattr(myPop,parameter) :
-                    fic.write(" "+value)
-                fic.write("\n")
-            elif parameter != 'name' :
-                fic.write(parameter+" = "+getattr(myPop,parameter)+"\n")
-        fic.write("*\n\n")
-
-    for myCycle in modele['cycles'] :
-        fic.write("+ cycle = "+myCycle.name+"\n")
-        for parameter in vars(myCycle) :
-            fic.write(parameter+" = "+getattr(myCycle,parameter)+"\n")
-        fic.write("+\n\n")
-
-    fic.write("#\n")
-    for parameter in modele['simulation_parameters'] :
-        fic.write(parameter+" = "+modele['simulation_parameters'][parameter]+"\n")
-    fic.write("#\n")
+    for compartment in network.compartments.values() :
+        fic.write(compartment.save_parameters())
+    fic.write(network.save_parameters())
 
     fic.close()
 
-# print("populations :")
-# for pop in populations :
-#     print '\t',pop,":"
-#     for param in populations[pop] :
-#         print "\t\t",param,populations[pop][param]
+    print("Parameters have been saved under",name_file)
