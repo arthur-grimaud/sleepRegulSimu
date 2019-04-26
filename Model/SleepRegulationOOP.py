@@ -97,9 +97,10 @@ class Network(NetworkGUI):
 
     def getHypno(self): #Return the current state of the model
         if self.compartments["wake"].C[0] < 0.4 :
-            return 0.5
-        elif self.compartments["REM"].C[0] > 0.4 :
-            return 0
+            if self.compartments["REM"].C[0] > 0.4 :
+                return 0.5
+            else :
+                return 0
         else :
             return 1
 
@@ -147,10 +148,10 @@ class Network(NetworkGUI):
 
     def addNP(self, populationParam): #Add an instance of NeuronalPopulation to the compartments dictionnary
         self.compartments [populationParam["name"]] = NeuronalPopulation(populationParam)
-
+        
     def addHSD(self, cycleParam): #Add an instance of HomeostaticSleepDrive to the compartments dictionnary
         self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam)
-
+        
     def addNPConnection(self, type, sourceName, targetName, weight): #Add a connection object to the concerned compartment
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
@@ -166,6 +167,16 @@ class Network(NetworkGUI):
         for attr, value in self.compartments .items():
             for conn in value.connections:
                 print("Connection type: ",conn.type,"  ", conn.source.name,"--",conn.weight,"-->",conn.target.name)
+
+    #-----------------------------Save parameters------------------------------------#
+
+    def save_parameters(self) :
+        string = "#\n"
+        for parameter in vars(self) :
+            if parameter == 't' or parameter == 'T' or parameter == 'res' :
+                string += parameter+" = "+str(getattr(self,parameter))+"\n"
+        string += "#\n\n"
+        return string
 
 
 
@@ -246,6 +257,35 @@ class NeuronalPopulation :
 
     def recorder(self): # Return the variables of the population
         return [self.F[0],self.C[0]]
+    
+    #-----------------------------Save parameters------------------------------------#
+
+    def save_parameters(self) :
+        string = "* population = "+self.name+"\n"
+        for parameter in vars(self) :
+            if parameter == 'F' or parameter == 'C' :
+                string += parameter+" = "+str(getattr(self,parameter)[0])+"\n"
+            elif parameter == 'connections' :
+                tmp = {}
+                tmp["g_NT_pop_list"] = []  
+                tmp["pop_list"] = []
+                for connection in getattr(self,parameter) :
+                    tmp["g_NT_pop_list"].append(connection.weight)
+                    tmp["pop_list"].append(connection.source.name)
+                for (key,value) in tmp.items() :
+                    string += key+" ="
+                    for element in value :
+                        string += " "+str(element)
+                    string += "\n"
+            elif isinstance(getattr(self,parameter),list) :
+                string += parameter+" ="
+                for value in getattr(self,parameter) :
+                    string += " "+str(value)
+                string += "\n"
+            elif parameter != 'name' and parameter != 'connections':
+                string += parameter+" = "+str(getattr(self,parameter))+"\n"
+        string += "*\n\n"
+        return string
 
 
 ########################HOMEOSTATICSLEEPDRIVE############################
@@ -301,6 +341,33 @@ class HomeostaticSleepDrive:
 
     def recorder(self):
         return [self.h[0]]
+    
+    #-----------------------------Save parameters------------------------------------#
+
+    def save_parameters(self) :
+        string = "+ cycle = "+self.name+"\n"
+        for parameter in vars(self) :
+            if parameter == 'h' :
+                string += parameter+" = "+str(getattr(self,parameter)[0])+"\n"
+            elif parameter == 'connections' :
+                tmp = {}
+                tmp["f_X"] = []
+                for connection in getattr(self,parameter) :
+                    tmp["f_X"].append(connection.source.name)
+                for (key,value) in tmp.items() :
+                    string += key+" ="
+                    for element in value :
+                        string += " "+str(element)
+                    string += "\n"
+            elif isinstance(getattr(self,parameter),list) :
+                string += parameter+" ="
+                for value in getattr(self,parameter) :
+                    string += " "+str(value)
+                string += "\n"
+            elif parameter != 'name' and parameter != 'connections':
+                string += parameter+" = "+str(getattr(self,parameter))+"\n"
+        string += "+\n\n"
+        return string
 
 
 #############################CONNECTION################################
