@@ -46,6 +46,19 @@ def loadModel():
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
 
+def doStats():
+    filez=filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select results files",filetypes = (("csv files","*.csv"),("all files","*.*")))
+    script = "Rscript RStatsHypno.r"
+    cwd = os.getcwd()
+    run = script + " " + cwd
+
+    for selection in filez:
+        run = run + " " + selection
+    
+    os.system(run)
+    
+
+
 #----------- Window initialization -----------
 
 window = tk.Tk()
@@ -119,11 +132,9 @@ b.grid(column=0, row=2)
 
 b = tk.Button(visuMenu, text="GenerateGraph", command=lambda: createGraph(network.results),width=25).grid(column=0, row=0)
 
-#--------------Visualization menu widgets-------------------
+#--------------Statistics menu widgets-------------------
 
-lbl = tk.Label(statMenu, text="Not available yet")
-lbl.config(font=("Courier", 30))
-lbl.grid(column=0, row=0)
-
+b = tk.Button(statMenu, text="Select results files", command=lambda: doStats(),width=25)
+b.grid(column=0, row=0)
 
 window.mainloop()
