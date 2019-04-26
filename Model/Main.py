@@ -1,6 +1,7 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
@@ -32,10 +33,10 @@ def loadModel():
     # for key in cycle.keys():
     #     network.addNP(conn[key])
 
-    for pop_source in conn.keys() :
+    for pop_ext in conn.keys() :
         i = 0
-        for pop_ext in conn[pop_source] :
-            network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_source]["g_NT_pop_list"][i])
+        for pop_source in conn[pop_ext] :
+            network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             i+=1
     network.addNPConnection("HSD-NP","HSD","NREM",1.5)
     network.addNPConnection("NP-HSD","wake","HSD",0)
@@ -45,12 +46,9 @@ def loadModel():
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
 
-
-
-
 #----------- Window initialization -----------
 
-window = Tk()
+window = tk.Tk()
 window.title("SR sim")
 window.geometry()
 
@@ -81,47 +79,49 @@ n.add(statMenu, text='Statistics')
 
 #-----------Main menu widgets---------------
 
-b = Button(mainMenu, text="Load model", command=lambda: loadModel(),width=25)
+b = tk.Button(mainMenu, text="Load model", command=lambda: loadModel(),width=25)
 b.grid(column=0, row=0)
 
-b = Button(mainMenu, text="Display network", command=lambda: network.displayGraph(),width=25)
+b = tk.Button(mainMenu, text="Display network", command=lambda: network.displayGraph(),width=25)
 b.grid(column=0, row=1)
 
-b = Button(mainMenu, text="Display connections", command=lambda: network.displayConnections(),width=25)
+b = tk.Button(mainMenu, text="Display connections", command=lambda: network.displayConnections(),width=25)
 b.grid(column=0, row=2)
 
-txt = Entry(mainMenu,width=25)
+txt = tk.Entry(mainMenu,width=25)
 txt.insert(END, "Enter compartment name")
 txt.grid(column=1, row=3)
 
 
-b = Button(mainMenu, text="PrintCompParamAndType", command=lambda: network.printAttrType(txt.get()),width=25)
+b = tk.Button(mainMenu, text="PrintCompParamAndType", command=lambda: network.printAttrType(txt.get()),width=25)
 b.grid(column=0, row=3)
 
 
 
 #--------------Param menu widgets-------------------
 
-b = Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
+b = tk.Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
 b.grid(column=0, row=0)
 
-b = Button(paramMenu, text="Add NP (WIP)", command=lambda: network.addObjToModel(network),width=25)
+b = tk.Button(paramMenu, text="Add NP (WIP)", command=lambda: network.addObjToModel(network),width=25)
 b.grid(column=0, row=4)
 
+b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters('test.txt',network))
+b.grid(column=0, row = 6)
 #--------------Run menu widgets-------------------
 
-b = Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)
+b = tk.Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)
 b.grid(column=0, row=0)
-b = Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar().grid(column=0, row=2),width=25)
+b = tk.Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar().grid(column=0, row=2),width=25)
 b.grid(column=0, row=2)
 
 #--------------Visualization menu widgets-------------------
 
-b = Button(visuMenu, text="GenerateGraph", command=lambda: createGraph(network),width=25).grid(column=0, row=0)
+b = tk.Button(visuMenu, text="GenerateGraph", command=lambda: createGraph(network.results),width=25).grid(column=0, row=0)
 
 #--------------Visualization menu widgets-------------------
 
-lbl = Label(statMenu, text="Not available yet")
+lbl = tk.Label(statMenu, text="Not available yet")
 lbl.config(font=("Courier", 30))
 lbl.grid(column=0, row=0)
 
