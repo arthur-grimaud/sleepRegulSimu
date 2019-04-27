@@ -27,7 +27,7 @@ data<-list()
 for(i in 1:(length(args))){
 #retreive first argument from command line (after default args and cwd) args[7] and beyond
   if (i>6){ 
-    temp<-read.csv(file=args[i],header=T, dec=".", sep=",") #be careful
+    temp<-read.csv(file=args[i],header=T, dec=".", sep="\t") #be careful with sep
     data<-append(data,temp[2])
   }
 }
@@ -68,7 +68,7 @@ for (i in 1:(length(data))){ #for every input file
   for (j in 1:(length(data[[i]]))){ #for every line in a file
     
     #NREM
-    if (data[[i]][j] == 0){  #0 corresponds to NREM 
+    if (data[[i]][j] == 0){ #0 corresponds to NREM 
       NREM<-NREM+1 #NREM count
       if (j<length(data[[i]]) && data[[i]][j+1] != data[[i]][j]) { #tests for change in state
         boutNREM<-boutNREM+1 #change in state marks the end of a bout
@@ -77,6 +77,11 @@ for (i in 1:(length(data))){ #for every input file
         timeNREM<-0 #time in bout reset since the state is changed
       }else{
           timeNREM<-timeNREM+1 #no change in state means staying in bout
+      }
+      if(j==length(data[[i]])){ #Stop at the end of the data 
+        timeNREMList<-rbind(timeNREMList,timeNREM) #time in bout pushed to list
+        timeNREM<-0  #reset time in bout
+        boutNREM<-boutNREM+1 #Correcting bout count by including final state
       }
     #REM
     }else if(data[[i]][j] == 0.5){
@@ -89,6 +94,11 @@ for (i in 1:(length(data))){ #for every input file
       }else{
         timeREM<-timeREM+1
       }
+      if(j==length(data[[i]])){ 
+        timeREMList<-rbind(timeREMList,timeREM)
+        timeREM<-0
+        boutREM<-boutREM+1
+      }
     #WAKE  
     }else{
       wake<-wake+1
@@ -100,18 +110,15 @@ for (i in 1:(length(data))){ #for every input file
       }else{
         timewake<-timewake+1
       }
+      if(j==length(data[[i]])){
+        timewakeList<-rbind(timewakeList,timewake)
+        timewake<-0
+        boutwake<-boutwake+1
+      }
     }
     total<-total+1
   }
-  
-  #Correcting bout count by including initial state
-  if (data[[i]][1] == 0){ 
-    boutNREM<-boutNREM+1
-  }else if(data[[i]][1]==0.5){
-    boutREM<-boutREM+1
-  }else{
-    boutwake<-boutwake+1 
-  }
+
   
   #make df for %time spent and bouts
   totals[i,]<-cbind(NREM,REM,wake,total)
@@ -147,11 +154,11 @@ boutDurDF[boutDurDF == "NULL"] <- NA
 boutDurDF$NREM = as.numeric(boutDurDF$NREM)
 boutDurDF$REM = as.numeric(boutDurDF$REM)
 boutDurDF$wake = as.numeric(boutDurDF$wake)
-#convert milliseconds to minutes
-boutDurDF<-boutDurDF/1000/60
+#convert dt (s) to minutes
+boutDurDF<-boutDurDF/60
 
 
-### Statistics ###
+#--------Statistics--------#
 
 # %Time
 #ANOVA
@@ -186,7 +193,7 @@ capture.output(boutDurAnova,boutDurTukey, file="boutDurStats.txt")
 
 cat("\nstats saved as timeStats.txt, boutsStats.txt, boutDurStats.txt \n\n")
 
-### Standard Deviation ###
+#--------Standard Deviation--------#
 
 # % Time
 totalMeans<-colMeans(totals)
@@ -225,7 +232,7 @@ boutDurSD<-sapply(boutDurDF, sd, na.rm = TRUE)
 boutDurSD<-cbind(boutDurSD,btMeans)
 names(boutDurSD)<-cbind("SD","mean","state")
 
-### Barplots ###
+#--------Barplots--------#
 
 #install.packages("ggplot2")
 library(ggplot2)
