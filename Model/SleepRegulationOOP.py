@@ -56,7 +56,6 @@ class Network(NetworkGUI):
     def runSim(self):
         self.initResults()
 
-        self.setInjections()
 
         while (self.step < self.T*self.res): # Main loop
 
@@ -87,11 +86,15 @@ class Network(NetworkGUI):
 
     def nextStepRK4(self):
         for N in range(4):
-            for c in self.compartments .values():
+            for c in self.compartments.values():
                 c.setNextSubStepRK4(self.dt,N,self.A[N])
+            for i in self.injections:
+                i.setNextSubStepRK4(self.dt,N,self.A[N])
 
         for c in self.compartments .values():
             c.setNextStepRK4()
+        for i in self.injections:
+            i.setNextStepRK4()
 
     #-----------------------------Hypnogram--------------------------------------#
 
@@ -135,23 +138,16 @@ class Network(NetworkGUI):
     def recorder(self):
         return[self.t,self.getHypno()]
 
-    #-----------------------------Injection--------------------------------------#
 
-    def setInjections(self):
-        for i in self.injections:
-            if i.time*self.res == self.step or i.injectionStarted:
-                i.SetQuantity()
-                i.target.C[0] = i.quantity
-                i.injectionStarted = True
 
     #-------------------------Network modification methods------------------------------#
 
     def addNP(self, populationParam): #Add an instance of NeuronalPopulation to the compartments dictionnary
         self.compartments [populationParam["name"]] = NeuronalPopulation(populationParam)
-        
+
     def addHSD(self, cycleParam): #Add an instance of HomeostaticSleepDrive to the compartments dictionnary
         self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam)
-        
+
     def addNPConnection(self, type, sourceName, targetName, weight): #Add a connection object to the concerned compartment
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
@@ -242,7 +238,7 @@ class NeuronalPopulation :
                 result += c.getConnectVal(N)
         return result
 
-    def getC(self,N): #differential equation of the neurotransmitter concentration released by the population
+    def getC(self,N): #equation of the neurotransmitter concentration released by the population
         return (np.tanh(self.F[N+1]/self.gamma) - self.C[N])/self.tau_NT
 
     def getBeta(self,N): #used to handle the homeostatic sleep drive
@@ -257,7 +253,7 @@ class NeuronalPopulation :
 
     def recorder(self): # Return the variables of the population
         return [self.F[0],self.C[0]]
-    
+
     #-----------------------------Save parameters------------------------------------#
 
     def save_parameters(self) :
@@ -267,7 +263,7 @@ class NeuronalPopulation :
                 string += parameter+" = "+str(getattr(self,parameter)[0])+"\n"
             elif parameter == 'connections' :
                 tmp = {}
-                tmp["g_NT_pop_list"] = []  
+                tmp["g_NT_pop_list"] = []
                 tmp["pop_list"] = []
                 for connection in getattr(self,parameter) :
                     tmp["g_NT_pop_list"].append(connection.weight)
@@ -341,7 +337,7 @@ class HomeostaticSleepDrive:
 
     def recorder(self):
         return [self.h[0]]
-    
+
     #-----------------------------Save parameters------------------------------------#
 
     def save_parameters(self) :
@@ -382,8 +378,13 @@ class Connection:
         self.source = source # Compartement object
         self.target = target # Compartement object
         self.weight = float(weight) #Weight of the connection
+        self.inj = None
 
         print('Connection object',self.source.name ,'-',self.target.name ,'created')
+
+    def addInj(self,injObj):
+        self.type = "NP-MI-NP"
+        self.inj = injObj
 
     def getConnectVal(self,N):
         if self.type == "NP-NP":
@@ -392,6 +393,8 @@ class Connection:
             return self.source.h[N] * self.weight
         if self.type == "NP-HSD":
             return self.source.F[N]
+        if self.type == "NP-MI-NP": #For microinjections simulations
+            return Mi*self.source.C[N]+Pi
 
 
 
@@ -402,15 +405,24 @@ class Connection:
 
 class Injection:
 
-    def __init__(self, target, quantity, time) :
-        self.target = target # Compartment object
-        self.quantity = float(quantity) #amount of neurotransmitter
-        self.time = time #time at wich the injection occures (in seconds)
-        self.injectionStarted = False #true if injection has started
+    def __init__(self, P, tauPi, iMin, iMax) :
+        self.P = [P,0,0,0,0]
+        self.tauPi = tauPi
+        self.iMin = iMin
+        self.imax = iMax
 
-        print('Injection of ',self.quantity ,' of ',self.target.concentration ,' in ',self.target.name, "planned at ",self.time," seconds" )
 
-    def SetQuantity(self):
-        self.quantity = self.quantity/1.1
-        if quantity < 0.01:
-            self.injectionStarted = False
+    def getP(self,N):
+        return -(self.P[N]/self.tauPi)
+
+    def getMi(self):
+        if self.P <= self.iMin:
+            return 1
+        else:
+            return 1 - (self.P[0] - self.iMin)/(self.iMax - self.iMin)
+
+    def setNextSubStepRK4(self,dt,N,coef):
+        self.P[N+1] = self.P[0] + coef * dt * self.getP(N)
+
+    def setNextStepRK4(self):
+        self.P[0] = (-3*self.P[0] + 2*self.P[1] + 4*self.P[2] + 2*self.P[3] + self.P[4])/6

@@ -10,6 +10,7 @@ from manage_parameters import *
 from SleepRegulationOOP import NeuronalPopulation
 from SleepRegulationOOP import HomeostaticSleepDrive
 from SleepRegulationOOP import Network
+from SleepRegulationOOP import Injection
 from graphique import *
 import os
 
@@ -42,7 +43,9 @@ def loadModel():
     network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
 
-    network.addInjection("NREM",0.8,3600)
+    network.compartments["NREM"].connections[0].addInj(Injection(5,10000,0.5,2.5))
+    network.injections.append(network.compartments["NREM"].connections[0].inj)
+
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
 
@@ -54,9 +57,9 @@ def doStats():
 
     for selection in filez:
         run = run + " " + selection
-    
+
     os.system(run)
-    
+
 
 
 #----------- Window initialization -----------

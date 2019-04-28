@@ -34,49 +34,70 @@ class NetworkGUI:
         lbl.grid(column=0, row=0)
 
         def callback(attr, attrB):
-            print("HERE")
             try:
-                if attr == "F" or "C" or "h":
+                if attr == "F" or  attr =="C" or attr =="h":
                     comp.__dict__[attr] = [float(attrB.get()),0,0,0,0]
+                elif attr == "beta":
+                    print("beta")
                 else:
                     comp.__dict__[attr] = float(attrB.get())
                 print (attrB.get())
             except ValueError:
-                print("Oops!  That was no valid number.  Try again...")
+                print("Var set as str")
                 comp.__dict__[attr] = str(attrB.get())
                 print (attrB.get())
+
+
+        def callbackW(weight, c):
+            try:
+                c.__dict__["weight"] = float(weight.get())
+                print (weight.get())
+                print("type(c.weight):",type(c.weight),c.weight)
+            except ValueError:
+                print("Var set as str")
+                comp.__dict__[attr] = str(weight.get())
+                print (weight.get())
+
 
         for attr, value in comp.__dict__.items():
 
             attrB = attr #making a copy of attr for trace
 
 
-
             attrB = StringVar()
             attrB.set(value)
-            attrB.trace("w", lambda name, index, mode,attr=attr, attrB=attrB,: callback(attr, attrB))
+            attrB.trace("w", lambda name, index, mode,attr=attr, attrB=attrB: callback(attr, attrB))
 
 
             if isinstance(value, list) and len(value) > 0 and attr == "connections": #Si liste de connection
                 for c in value:
+
+
                     i += 1
-                    lbl = Label(compFrame, text="connection: ")
-                    lbl.grid(column=0, row=i)
-                    txt = Entry(compFrame, width=10)
-                    txt.insert(END, c.source.name)
-                    txt.grid(column=1, row=i)
-                    txt = Entry(compFrame, width=10)
-                    txt.insert(END, c.target.name)
-                    txt.grid(column=2, row=i)
-                    txt = Entry(compFrame, width=10)
-                    txt.insert(END, c.weight)
-                    txt.grid(column=3, row=i)
+
+                    weight = StringVar()
+                    weight.set(c.weight)
+                    weight.trace("w", lambda name, index, mode, weight=weight, c=c: callbackW(weight, c))
+
+                    lbl = Label(compFrame, text="connection: ").grid(column=0, row=i)
+
+                    lbl = Label(compFrame, text=c.source.name).grid(column=1, row=i)
+
+                    lbl = Label(compFrame, text=c.target.name).grid(column=2, row=i)
+
+                    e = Entry(compFrame, width=10)
+                    # e.delete(0,END)
+                    # e.insert(END, value)
+                    e.config(textvariable=weight)
+                    e.grid(column=3, row=i)
+
+
             elif attr == "name":
                 i += 1
                 lbl = Label(compFrame, text=attr)
                 lbl.grid(column=0, row=i)
                 txt = Entry(compFrame, width=10)
-                txt.insert(END, value[0])
+                txt.insert(END, value)
                 txt.grid(column=1, row=i)
             elif attr == "F" or attr == "C" or attr == "h":
                 i += 1
@@ -92,8 +113,9 @@ class NetworkGUI:
                 lbl = Label(compFrame, text=attr)
                 lbl.grid(column=0, row=i)
                 txt = Entry(compFrame, width=10)
-                txt.insert(END, value)
                 txt.config(textvariable=attrB)
+                txt.delete(0,END)
+                txt.insert(END, value)
                 txt.grid(column=1, row=i)
 
         #b = Button(compFrame, text="Apply changes", command=lambda: self.saveAndClose(var,window),width=25).grid(column=2, row=0)
@@ -127,7 +149,6 @@ class NetworkGUI:
 
         saveRate = StringVar()
         saveRate.trace("w", lambda name, index, mode, saveRate=saveRate: callbackSaveRate(saveRate))
-
 
         frame = Frame(window)
 
