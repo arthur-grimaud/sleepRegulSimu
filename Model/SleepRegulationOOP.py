@@ -151,8 +151,14 @@ class Network(NetworkGUI):
     def addNPConnection(self, type, sourceName, targetName, weight): #Add a connection object to the concerned compartment
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
 
-    def addInjection(self, targetName, quantity, time):
-        self.injections.append(Injection(self.compartments[targetName], quantity, time))
+    def addInjection(self, connection, P0, TauInj, iMin, iMax, type ):
+        if type == "Agonist":
+            connection.addInjE(Injection(P0, TauInj, iMin, iMax))
+            self.injections.append(connection.inj)
+        if type == "Antagonist":
+            connection.addInjE(Injection(P0, TauInj, iMin, iMax))
+            self.injections.append(connection.inj)
+
     #-------------------------------Debugging methods----------------------------------#
 
     def printAttrType(self,compID): #Print name,value,type of all attributs of a compartment.
@@ -162,7 +168,7 @@ class Network(NetworkGUI):
     def displayConnections(self): #Print all connections wich are in a compartment informations
         for attr, value in self.compartments .items():
             for conn in value.connections:
-                print("Connection type: ",conn.type,"  ", conn.source.name,"--",conn.weight,"-->",conn.target.name)
+                print("Connection type: ",conn.type,"  ",conn.source.name,"--",conn.weight,"-->",conn.target.name)
 
     #-----------------------------Save parameters------------------------------------#
 
@@ -382,9 +388,15 @@ class Connection:
 
         print('Connection object',self.source.name ,'-',self.target.name ,'created')
 
-    def addInj(self,injObj):
-        self.type = "NP-MI-NP"
+    def addInjE(self,injObj):
+        self.type = "NP-MIE-NP" # MIE : MicroInjection Excitatory (Agonist)
         self.inj = injObj
+        print("NP-NP connection has been modified into NP-MIE-NP")
+
+    def addInjI(self,injObj):
+        self.type = "NP-MII-NP" # MIE : MicroInjection Inhibitory (Antagonist)
+        self.inj = injObj
+        print("NP-NP connection has been modified into NP-MII-NP")
 
     def getConnectVal(self,N):
         if self.type == "NP-NP":
@@ -393,8 +405,10 @@ class Connection:
             return self.source.h[N] * self.weight
         if self.type == "NP-HSD":
             return self.source.F[N]
-        if self.type == "NP-MI-NP": #For microinjections simulations
+        if self.type == "NP-MIE-NP": #microinjections of agonist simulations
             return Mi*self.source.C[N]+Pi
+        if self.type == "NP-MII-NP": #microinjections of antagonist simulations
+            return (1-Pi)*self.source.C[N]
 
 
 

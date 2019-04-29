@@ -43,7 +43,7 @@ def loadModel():
     network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
 
-    network.compartments["NREM"].connections[0].addInj(Injection(5,10000,0.5,2.5))
+    network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))
     network.injections.append(network.compartments["NREM"].connections[0].inj)
 
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
@@ -124,6 +124,9 @@ b.grid(column=0, row=4)
 
 b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters('test.txt',network))
 b.grid(column=0, row = 6)
+
+b = tk.Button(paramMenu, text="Add injection", command=lambda: network.getInjectionCreationWindow())
+b.grid(column=0, row = 7)
 #--------------Run menu widgets-------------------
 
 b = tk.Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)

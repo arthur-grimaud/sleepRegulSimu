@@ -319,6 +319,66 @@ class NetworkGUI:
     #             a = str(allWidgets[w].get())
     #             return a.get()  ####PROBLEM:return as stringvar type but is a string##### :o(
 
+    #------------------------------Injection settings---------------------------------------
+
+    def getInjectionCreationWindow(self):
+
+        window = Tk()
+
+
+        connAvailable = []
+        connAvailableStr = []
+        conn = StringVar()
+        injType = StringVar()
+
+        optType = ["Agonist", "Antagonist"]
+
+        def changeConn(new):
+            conn = connAvailable[connAvailableStr.index(new)]
+            print(conn)
+
+        def changeInjType(new):
+            injType = new
+            print(injType)
+
+
+        for c in self.compartments.values():
+            for i in c.connections:
+                if i.type == "NP-NP":
+                    connAvailableStr.append("Injection of: "+str(i.source.concentration)+" in "+str(i.target.name))
+                    connAvailable.append(i)
+
+
+        lbl = Label(window, text="Select Injection").grid(column=0, row=0)
+        optMenu = OptionMenu(window, conn, *connAvailableStr, command=changeConn).grid(column=1, row=0)
+
+        lbl = Label(window, text="P0").grid(column=0, row=1)
+        e1 = Entry(window)
+        e1.grid(column=1, row=1)
+
+        lbl = Label(window, text="TauInj").grid(column=0, row=2)
+        e2 = Entry(window)
+        e2.grid(column=1, row=2)
+
+        lbl = Label(window, text="iMin").grid(column=0, row=3)
+        e3 = Entry(window)
+        e3.grid(column=1, row=3)
+
+        lbl = Label(window, text="iMax").grid(column=0, row=4)
+        e4 = Entry(window)
+        e4.grid(column=1, row=4)
+
+        lbl = Label(window, text="Select Injection").grid(column=0, row=5)
+        optMenu = OptionMenu(window, injType, *optType, command=changeInjType).grid(column=1, row=5)
+
+        print(e1.get())
+        print(e2.get())
+        print(e3.get())
+        print(e4.get())
+
+        b = Button(window, text="Create", command=lambda: self.addInjection(conn.get(), e1.get(), e2.get(), e3.get(), e4.get(), injType.get() ),width=25).grid(column=0, row=6)
+
+        window.mainloop()
 
 
     #------------------------------Graph generation-----------------------------------------
