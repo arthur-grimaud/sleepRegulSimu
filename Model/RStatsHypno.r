@@ -4,12 +4,12 @@
 
 #--------Importing and formatting data--------#
 
-#Get arguments from command line: .txt files to read
+#Get arguments from command line: cwd, .txt files to read
 args<-commandArgs()
 #cat(args,sep="\n")
 #length(args)
 
-#--------Set working directory to source file location--------#
+#Set working directory to source file location
 setwd(args[6])
 
 # testing without passing through python
@@ -29,6 +29,8 @@ for(i in 1:(length(args))){
   if (i>6){ 
     temp<-read.csv(file=args[i],header=T, dec=".", sep="\t") #be careful with sep
     data<-append(data,temp[2])
+    step<-temp[[1]][2]-temp[[1]][1]
+    step
   }
 }
 #data
