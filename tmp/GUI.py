@@ -403,6 +403,6 @@ class NetworkGUI:
 
     #------------------------------Save the parameters-----------------------------------------
 
-    def saveResults(self) :
+    def getResults(self) :
         self.runSim()
         self.writeInFile(filedialog.asksaveasfile(title="Save as", initialdir=os.getcwd(), mode="w", defaultextension=".csv"),self.results)
