@@ -11,7 +11,7 @@ from SleepRegulationOOP import NeuronalPopulation
 from SleepRegulationOOP import HomeostaticSleepDrive
 from SleepRegulationOOP import Network
 from SleepRegulationOOP import Injection
-from graphique import *
+from graphic import *
 import os
 
 network = Network()
