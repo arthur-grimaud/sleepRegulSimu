@@ -64,12 +64,12 @@ def write_parameters(name_file,network) :
     ### writes a file with the input parameters
     # creates a file following the same format as default_parameters.txt
 
-    fic = open(name_file,"w")
+    # fic = open(name_file,"w")
 
     for compartment in network.compartments.values() :
-        fic.write(compartment.save_parameters())
-    fic.write(network.save_parameters())
+        name_file.write(compartment.save_parameters())
+    name_file.write(network.save_parameters())
 
-    fic.close()
+    name_file.close()
 
-    print("Parameters have been saved under",name_file)
+    print("Parameters have been saved under",name_file.name)

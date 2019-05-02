@@ -7,10 +7,12 @@
 import numpy as np
 #Gaphical interface
 from tkinter import *
+from tkinter import filedialog
 #Graph generation
-from graphviz import Digraph
+# from graphviz import Digraph
 
 from functools import partial
+import os
 
 class NetworkGUI:
 
@@ -383,17 +385,24 @@ class NetworkGUI:
 
     #------------------------------Graph generation-----------------------------------------
 
-    def displayGraph(self):
-        dot = Digraph()
+    # def displayGraph(self):
+    #     dot = Digraph()
 
-        for cName in self.compartments .keys():
-            dot.node(str(cName),str(cName))
+    #     for cName in self.compartments .keys():
+    #         dot.node(str(cName),str(cName))
 
-        for cObj in self.compartments .values():
-            for conn in cObj.connections:
-                    if conn.weight < 0:
-                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
-                    if conn.weight >= 0:
-                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
+    #     for cObj in self.compartments .values():
+    #         for conn in cObj.connections:
+    #                 if conn.weight < 0:
+    #                     dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
+    #                 if conn.weight >= 0:
+    #                     dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
 
-        dot.render('test-output.gv', view=True)
+    #     dot.render('test-output.gv', view=True)
+
+
+    #------------------------------Save the results-----------------------------------------
+
+    def getResults(self) :
+        self.runSim()
+        self.writeInFile(filedialog.asksaveasfile(title="Save as", initialdir=os.getcwd(), mode="w", defaultextension=".csv"),self.results)

@@ -22,6 +22,7 @@ class Network(NetworkGUI):
 
         self.compartments  = {} #Ditionnary containing all the compartments objects
         self.results = []  #Data storage
+        self.headers = [] # Data storage
         self.injections = [] #injection storage
 
         #Simulation parameters
@@ -63,7 +64,6 @@ class Network(NetworkGUI):
                 print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
-
                 print(self.t)
                 print("wakeF",self.compartments["wake"].F[0])
                 print("NREMF",self.compartments["NREM"].F[0])
@@ -77,8 +77,7 @@ class Network(NetworkGUI):
             self.step += 1
             self.t = math.floor(self.step/self.res) # current time since simulation time in sc
 
-
-        self.writeInFile(self.results) # Write results in a file
+        # self.writeInFile("results.csv",self.results) # Write results in a file
 
     def nextStep(self): #call next step method in each compartments
         for c in self.compartments .values():
@@ -108,35 +107,37 @@ class Network(NetworkGUI):
             return 1
 
     #-------------------------------Write----------------------------------------#
-
-    def writeInFile(self,data):
-        with open('results.csv', 'w') as f:
-            writer = csv.writer(f, delimiter='\t')
-            writer.writerows(zip(*data))
-
-        f.close()
+    
+    def writeInFile(self,filename,data):
+        # with open(filename, 'w') as f:
+        writer = csv.writer(filename, delimiter='\t')
+        writer.writerows(zip(*data))
+        filename.close()
 
     #-----------------------------Recorders--------------------------------------#
 
     def initResults(self): #Set the correct number of Sublist in self.results in function of the number of variable to be saved
-        for v in self.recorder():
-            self.results.append([])
+        for header in self.recorder():
+            self.results.append([header])
+            self.headers.append(header)
         for c in self.compartments.values():
-            for var in c.recorder():
-                self.results.append([])
+            for header in c.recorder():
+                self.results.append([header])
+                self.headers.append(header)
 
     def getAndSaveRecorders(self): #Call the recorders in each compartements
         i=0
-        for var in self.recorder():
-            self.results[i].append(var)
-            i+=1
-        for c in self.compartments.values():
-            for var in c.recorder():
-                self.results[i].append(var)
+        for var in self.headers:
+            if var in self.recorder().keys() :
+                self.results[i].append(self.recorder()[var])
                 i+=1
+            for c in self.compartments.values():
+                if var in c.recorder().keys() :
+                    self.results[i].append(c.recorder()[var])
+                    i+=1
 
     def recorder(self):
-        return[self.t,self.getHypno()]
+        return {'time': self.t, 'hypnogram': self.getHypno()}
 
 
 
@@ -233,6 +234,7 @@ class NeuronalPopulation :
         if self.F[0] < 0: #FR not negative
             self.F[0] = 0
 
+
     #-----------------------------------Noise-----------------------------------#
 
     def generationWhiteGaussianNoise(self): #Return white noise from a Gaussian distribution
@@ -240,7 +242,6 @@ class NeuronalPopulation :
         stdNoise = 0.002 # STD white noise value in [Hz]
         noiseSample = np.random.normal(meanNoise, stdNoise)
         return noiseSample
-
 
     #---------------------------------Equations------------------------------------#
 
@@ -269,7 +270,9 @@ class NeuronalPopulation :
     #---------------------------------Recorder------------------------------------#
 
     def recorder(self): # Return the variables of the population
-        return [self.F[0],self.C[0]]
+        header_F = self.name+"_F"
+        header_C = self.name+"_C"
+        return {header_F: self.F[0], header_C: self.C[0]}
 
     #-----------------------------Save parameters------------------------------------#
 
@@ -353,7 +356,7 @@ class HomeostaticSleepDrive:
     #---------------------------------Recorder------------------------------------#
 
     def recorder(self):
-        return [self.h[0]]
+        return {'homeostatic': self.h[0]}
 
     #-----------------------------Save parameters------------------------------------#
 

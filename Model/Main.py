@@ -122,21 +122,22 @@ b.grid(column=0, row=0)
 b = tk.Button(paramMenu, text="Add NP (WIP)", command=lambda: network.addObjToModel(network),width=25)
 b.grid(column=0, row=4)
 
-b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters('test.txt',network))
+b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters(filedialog.asksaveasfile(title="Save as", initialdir=os.getcwd(), mode="w", defaultextension=".txt"),network))
 b.grid(column=0, row = 6)
 
 b = tk.Button(paramMenu, text="Add injection", command=lambda: network.getInjectionCreationWindow())
 b.grid(column=0, row = 7)
 #--------------Run menu widgets-------------------
 
-b = tk.Button(runMenu, text="Run sim", command=lambda: network.runSim(),width=25)
-b.grid(column=0, row=0)
+b = tk.Button(runMenu, text="Run sim", command=lambda: network.getResults(),width=25)
+b.grid(row=0)
 b = tk.Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar().grid(column=0, row=2),width=25)
-b.grid(column=0, row=2)
+b.grid(row=2)
 
 #--------------Visualization menu widgets-------------------
 
-b = tk.Button(visuMenu, text="GenerateGraph", command=lambda: createGraph(network.results),width=25).grid(column=0, row=0)
+b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results),width=75).grid(column=0, row=0)
+b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: GraphFromCSV(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0, row=1)
 
 #--------------Statistics menu widgets-------------------
 
