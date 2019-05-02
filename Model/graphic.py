@@ -100,7 +100,6 @@ def createGraph(data):
     for (fr,values) in data["firing rates"].items() :
         sub1=plt.plot(data['time'], values, colors[fr], label=fr)
     xticks(time_ms,time_h)
-    plt.xlabel('Time (h)')
     plt.ylabel('Activity (Hz)')
     plt.legend(loc='best')
 
@@ -109,7 +108,6 @@ def createGraph(data):
         sub2=plt.plot(data['time'], values, colors[c], label=c)
     sub2=plt.plot(data['time'],data['homeostatic'],colors['homeostatic'],label="homeostatic")
     xticks(time_ms,time_h)
-    plt.xlabel("Time (h)")
     plt.ylabel("Concentrations")
     plt.legend(loc='best')
 
