@@ -1,6 +1,12 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+### If user is on Mac ###
+from sys import platform as sys_pf
+if sys_pf == 'darwin':
+    import matplotlib
+    matplotlib.use("TkAgg")
+
 import tkinter as tk
 import matplotlib.pyplot as plt
 from pylab import xticks
