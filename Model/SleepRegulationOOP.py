@@ -228,7 +228,7 @@ class NeuronalPopulation :
         self.C[N+1] = self.C[0] + coef * dt * self.getC(N)
 
     def setNextStepRK4(self):
-        self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + self.generationWhiteGaussianNoise() #Includes noise
+        self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + self.additiveWhiteGaussianNoise() #Includes noise
         self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
        
         if self.F[0] < 0: #FR not negative
@@ -237,9 +237,9 @@ class NeuronalPopulation :
 
     #-----------------------------------Noise-----------------------------------#
 
-    def generationWhiteGaussianNoise(self): #Return white noise from a Gaussian distribution
+    def additiveWhiteGaussianNoise(self): #Return white noise from a Gaussian distribution
         meanNoise = 0.0 # Mean white noise value in [Hz]
-        stdNoise = 0.002 # STD white noise value in [Hz]
+        stdNoise = 0.001 # STD white noise value in [Hz]
         noiseSample = np.random.normal(meanNoise, stdNoise)
         return noiseSample
 
