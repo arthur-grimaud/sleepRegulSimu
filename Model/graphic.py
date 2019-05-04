@@ -1,19 +1,17 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+import tkinter as tk
+import matplotlib.pyplot as plt
+from pylab import xticks
+from pylab import yticks
+import csv
+
 ### If user is on Mac ###
 from sys import platform as sys_pf
 if sys_pf == 'darwin':
     import matplotlib
     matplotlib.use("TkAgg")
-
-import tkinter as tk
-import matplotlib.pyplot as plt
-from pylab import xticks
-from pylab import yticks
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-import csv
 
 ### Choose what to display ###
 
@@ -143,7 +141,7 @@ def readCSV(file) :
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader :
             for (name,element) in row.items() :
-                results[name].append(element)
+                results[name].append(float(element))
     return results
 
 def GraphFromCSV(file) :
@@ -158,3 +156,48 @@ def GraphFromSim(sim):
     for var in sim : 
         data[var[0]] = var[1:]
     createGraph(data)
+
+
+#########################################################################################################
+
+### create mean graphs ###
+
+def createMeanGraphs(files) :
+    results = []
+    for file in files :
+        results.append(readCSV(file)) 
+
+    mean_data = {}
+    for element in results[0] :
+        if element != 'hypnogram' :
+            mean_data[element] = []
+    
+    print(mean_data)
+
+    for element in mean_data :
+        mean_element = []
+        mean_element_tmp = []
+        for fic in results : 
+            mean_element_tmp.append(fic[element])
+        for i in range(len(mean_element_tmp[0])) :
+            tmp = 0
+            for fic in mean_element_tmp :
+                tmp += fic[i]
+            tmp /= len(mean_element_tmp)
+            mean_element.append(tmp)
+        mean_data[element] = mean_element
+    
+    mean_data['hypnogram'] = []
+    for i in range(len(mean_data['time'])):
+        if mean_data['wake_C'][i] < 0.4 :
+            if mean_data['REM_C'][i] > 0.4 :
+                mean_data['hypnogram'].append(0.5)
+            else :
+                mean_data['hypnogram'].append(0)
+        else : 
+            mean_data['hypnogram'].append(1)
+    
+    createGraph(mean_data)
+
+
+# createMeanGraphs(files)
