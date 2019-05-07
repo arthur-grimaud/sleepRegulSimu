@@ -1,18 +1,18 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+### If user is on Mac ###
+from sys import platform as sys_pf
+if sys_pf == 'darwin':
+    import matplotlib
+    matplotlib.use("TkAgg")
+
 import tkinter as tk
 import matplotlib.pyplot as plt
 from pylab import xticks
 from pylab import yticks
 import csv
 import statistics
-
-### If user is on Mac ###
-from sys import platform as sys_pf
-if sys_pf == 'darwin':
-    import matplotlib
-    matplotlib.use("TkAgg")
 
 ### Choose what to display ###
 
@@ -96,7 +96,6 @@ def transformData(data,option) :
 def createGraph(data,option=0):
 
     to_display = whatToDisplay()
-    print("to display : ",to_display)
     
     ### defines the corresponding colors for the 3 populations model
     colors = {
@@ -128,7 +127,8 @@ def createGraph(data,option=0):
         if option == 'stdev' :
             for stdev in ['stdev min','stdev max'] :
                 for (fr, values) in data[stdev]["firing rates"].items() :
-                    sub1=plt.plot(data['time'], values, colors[fr], linewidth=0.5)
+                    sub1=plt.plot(data['time'], values, colors[fr], linewidth=0.25)
+                    sub1=plt.fill_between(data['time'],values,data['firing rates'][fr],color=colors[fr],alpha=0.25)
 
         xticks(time_ms,time_h)
         plt.ylabel('Activity (Hz)')
@@ -149,7 +149,8 @@ def createGraph(data,option=0):
         if option == 'stdev' :
             for stdev in ['stdev min','stdev max'] :
                 for (c,values) in data[stdev]["concentrations"].items() :
-                    sub2=plt.plot(data['time'], values, colors[c], linewidth=0.5)
+                    sub2=plt.plot(data['time'], values, colors[c], linewidth=0.25)
+                    sub2=plt.fill_between(data['time'],values,data['concentrations'][c],color=colors[c],alpha=0.25)
 
         plt.ylabel("Concentrations")
         plt.legend(loc='best')
@@ -262,14 +263,3 @@ def createMeanGraphs(files) :
         createGraph(mean_data,'stdev')
     else : 
         createGraph(mean_data)
-
-
-files = [
-    {'time' : [1,2,8,5,9]},
-    {'time' : [45,8,5,69,21]},
-    {'time' : [7,58,45,62,14]},
-    {'time' : [5,12,48,35,65]},
-    {'time' : [64,56,21,47,85]}
-]
-
-# createMeanGraphs(files)
