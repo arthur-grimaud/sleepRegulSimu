@@ -37,8 +37,8 @@ class Network(NetworkGUI):
         self.A = [0.5, 0.5, 1.0, 1.0]
 
         if len(args) == 1: #If the parameters dictionnary has been given to the constructor
-            self.step = int(args[0]["t"])
-            self.T = int(args[0]["T"])
+            self.step = float(args[0]["t"])
+            self.T = float(args[0]["T"])
             self.res = float(args[0]["res"])
             self.dt = 1E3 / self.res
             self.t = 0
@@ -56,8 +56,8 @@ class Network(NetworkGUI):
     #-----------------------------------Setter------------------------------------#
 
     def setSimParam(self, simParam):  #Set the simulation parameters from a dictionnary
-        self.step = int(simParam["t"])
-        self.T = int(simParam["T"])
+        self.step = float(simParam["t"])
+        self.T = float(simParam["T"])
         self.res = float(simParam["res"])
         self.dt = 1E3 / self.res
         self.t = 0
@@ -192,7 +192,7 @@ class Network(NetworkGUI):
     def save_parameters(self) :
         string = "#\n"
         for parameter in vars(self) :
-            if parameter == 't' or parameter == 'T' or parameter == 'res' :
+            if parameter == 't' or parameter == 'T' or parameter == 'res' or parameter == 'mean' or parameter == 'std':
                 string += parameter+" = "+str(getattr(self,parameter))+"\n"
         string += "#\n\n"
         return string
@@ -327,8 +327,7 @@ class HomeostaticSleepDrive:
         self.H_max = float(myCycle["H_max"])
         self.tau_hw = float(myCycle["tau_hw"])
         self.tau_hs = float(myCycle["tau_hs"])
-        #self.f_X = myCycle["f_X"]
-        self.theta_X = float(myCycle["theta_X"])
+        self.theta_X = float(myCycle["g_NT_pop_list"][0])
 
         self.connections = []
 
@@ -374,9 +373,11 @@ class HomeostaticSleepDrive:
                 string += parameter+" = "+str(getattr(self,parameter)[0])+"\n"
             elif parameter == 'connections' :
                 tmp = {}
-                tmp["f_X"] = []
+                tmp["g_NT_pop_list"] = []
+                tmp["pop_list"] = []
                 for connection in getattr(self,parameter) :
-                    tmp["f_X"].append(connection.source.name)
+                    tmp["g_NT_pop_list"].append(connection.weight)
+                    tmp["pop_list"].append(connection.source.name)
                 for (key,value) in tmp.items() :
                     string += key+" ="
                     for element in value :
@@ -407,7 +408,7 @@ class Connection:
         self.weight = float(weight) #Weight of the connection
         self.inj = None
 
-        print('Connection object',self.source.name ,'-',self.target.name ,'created')
+        print('Connection object',self.source.name ,'-',self.target.name ,'created with weight ',self.weight)
 
     def addInjE(self,injObj):
         self.type = "NP-MIE-NP" # MIE : MicroInjection Excitatory (Agonist)

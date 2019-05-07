@@ -34,13 +34,18 @@ def loadModel():
     # for key in cycle.keys():
     #     network.addNP(conn[key])
 
+    print(conn)
+
     for pop_ext in conn.keys() :
         i = 0
         for pop_source in conn[pop_ext] :
-            network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
+            if pop_ext == 'homeostatic' or pop_ext == 'HSD':
+                network.addNPConnection("HSD-NP",pop_source,"HSD",cycle[pop_ext]["g_NT_pop_list"][i])
+            elif pop_source == 'homeostatic' or pop_source == 'HSD':
+                network.addNPConnection("NP-HSD","HSD",pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
+            else :
+                network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             i+=1
-    network.addNPConnection("HSD-NP","HSD","NREM",1.5)
-    network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
 
     # network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))

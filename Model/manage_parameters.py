@@ -41,7 +41,7 @@ def read_parameters(file) :
             elif line[0] == "#" and check_sim == 1 :
                 check_sim = 0
 
-            elif check_pop == 1 and line[0] != "*" :
+            elif (check_pop == 1 and line[0] != "*") :
                 if line[0] == "g_NT_pop_list" or line[0] == "pop_list" or line[0] == "beta" :
                     myParameter = []
                     for i in range(2,len(line)) :
@@ -52,7 +52,15 @@ def read_parameters(file) :
                 if line[0] == "pop_list" :
                     connections[currentPopulation] = myParameter
             elif check_cycle == 1 and line[0] != "+" :
-                cycles[currentCycle][line[0]] = line[2]
+                if line[0] == "g_NT_pop_list" or line[0] == "pop_list" :
+                    myParameter = []
+                    for i in range(2,len(line)) :
+                        myParameter.append(line[i])
+                    cycles[currentCycle][line[0]] = myParameter
+                else :
+                    cycles[currentCycle][line[0]] = line[2]
+                if line[0] == "pop_list" :
+                    connections[currentCycle] = myParameter
             elif check_sim == 1 and line[0] != "#" :
                 simulation_parameters[line[0]] = line[2]
 
