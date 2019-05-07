@@ -42,6 +42,8 @@ class Network(NetworkGUI):
             self.res = float(args[0]["res"])
             self.dt = 1E3 / self.res
             self.t = 0
+            self.mean = float(args[0]["mean"]) 
+            self.std = float(args[0]["std"]) 
 
     #-----------------------------------Setter------------------------------------#
 
@@ -51,6 +53,16 @@ class Network(NetworkGUI):
         self.res = float(simParam["res"])
         self.dt = 1E3 / self.res
         self.t = 0
+        self.mean = float(simParam["mean"])
+        self.std = float(simParam["std"])
+        
+    #-----------------------------------Noise-----------------------------------#
+
+    def additiveWhiteGaussianNoise(self): #Returns white noise from a Gaussian distribution
+        meanNoise = 0.0 # Mean white noise value in [Hz]
+        stdNoise = 0.001 # STD white noise value in [Hz]
+        noiseSample = np.random.normal(meanNoise, stdNoise)
+        return noiseSample
 
     #------------------------------Run simulation----------------------------------#
 
@@ -90,8 +102,13 @@ class Network(NetworkGUI):
             for i in self.injections:
                 i.setNextSubStepRK4(self.dt,N,self.A[N])
 
-        for c in self.compartments .values():
-            c.setNextStepRK4()
+        for c in self.compartments.values():
+            if isinstance(c,NeuronalPopulation):
+                noise = self.additiveWhiteGaussianNoise()
+                c.setNextStepRK4(noise)
+            else:
+                c.setNextStepRK4()
+
         for i in self.injections:
             i.setNextStepRK4()
 
@@ -227,21 +244,14 @@ class NeuronalPopulation :
         self.F[N+1] = self.F[0] + coef * dt * self.getFR(N)
         self.C[N+1] = self.C[0] + coef * dt * self.getC(N)
 
-    def setNextStepRK4(self):
-        self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + self.additiveWhiteGaussianNoise() #Includes noise
+    def setNextStepRK4(self, noise):
+        self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + noise
         self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
        
         if self.F[0] < 0: #FR not negative
             self.F[0] = 0
 
 
-    #-----------------------------------Noise-----------------------------------#
-
-    def additiveWhiteGaussianNoise(self): #Return white noise from a Gaussian distribution
-        meanNoise = 0.0 # Mean white noise value in [Hz]
-        stdNoise = 0.001 # STD white noise value in [Hz]
-        noiseSample = np.random.normal(meanNoise, stdNoise)
-        return noiseSample
 
     #---------------------------------Equations------------------------------------#
 
