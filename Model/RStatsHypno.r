@@ -6,17 +6,17 @@
 
 #Get arguments from command line: cwd, .txt files to read
 args<-commandArgs()
-#cat(args,sep="\n")
-#length(args)
+cat(args,sep="\n")
+length(args)
 
 #Set working directory to source file location
 setwd(args[6])
 
-# testing without passing through python
-# data1<-read.csv(file="results2.csv",header=T, dec=".",sep=",")
-# data1<-data1[2] #hypno column
-# data2<-read.delim(file="results2.csv",header=T, dec=".", sep=",")
-# data2<-data2[2]
+#testing without passing through python
+# data1<-read.csv(file="statsTest1.csv",header=T, dec=".",sep="\t")
+# data1<-as.data.frame(data1$hypnogram) #hypno column
+# data2<-read.delim(file="statsTest2.csv",header=T, dec=".", sep="\t")
+# data2<-as.data.frame(data2$hypnogram)
 # data<-list()
 # data<-append(data,data1)
 # data<-append(data,data2)
@@ -28,7 +28,8 @@ for(i in 1:(length(args))){
 #retreive first argument from command line (after default args and cwd) args[7] and beyond
   if (i>6){ 
     temp<-read.csv(file=args[i],header=T, dec=".", sep="\t") #be careful with sep
-    data<-append(data,temp[2])
+    tempHypno<-as.data.frame(temp$hypnogram)
+    data<-append(data,tempHypno)
     step<-temp[[1]][2]-temp[[1]][1]
     step
   }
@@ -149,7 +150,8 @@ length(timewakeList)<-n
 timeInBouts<-cbind(timeNREMList,timeREMList,timewakeList)
 
 #Create dataframe from timeInBouts list
-boutDurDF<-as.data.frame(timeInBouts)
+x<-length(timeREMList)
+boutDurDF<-as.data.frame(timeInBouts,row.names=1:x)
 names(boutDurDF)<-c("NREM","REM","wake")
 #Replace "Null" with NA and make data numeric for futher processing
 boutDurDF[boutDurDF == "NULL"] <- NA
