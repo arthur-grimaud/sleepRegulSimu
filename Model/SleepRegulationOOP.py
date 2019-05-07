@@ -45,6 +45,14 @@ class Network(NetworkGUI):
             self.mean = float(args[0]["mean"]) 
             self.std = float(args[0]["std"]) 
 
+    #-----------------------------------Noise-----------------------------------#
+
+    def additiveWhiteGaussianNoise(self): #Returns white noise from a Gaussian distribution
+        meanNoise = 0.0 # Mean white noise value in [Hz]
+        stdNoise = 0.001 # STD white noise value in [Hz]
+        noiseSample = np.random.normal(meanNoise, stdNoise)
+        return noiseSample
+
     #-----------------------------------Setter------------------------------------#
 
     def setSimParam(self, simParam):  #Set the simulation parameters from a dictionnary
@@ -53,16 +61,6 @@ class Network(NetworkGUI):
         self.res = float(simParam["res"])
         self.dt = 1E3 / self.res
         self.t = 0
-        self.mean = float(simParam["mean"])
-        self.std = float(simParam["std"])
-        
-    #-----------------------------------Noise-----------------------------------#
-
-    def additiveWhiteGaussianNoise(self): #Returns white noise from a Gaussian distribution
-        meanNoise = 0.0 # Mean white noise value in [Hz]
-        stdNoise = 0.001 # STD white noise value in [Hz]
-        noiseSample = np.random.normal(meanNoise, stdNoise)
-        return noiseSample
 
     #------------------------------Run simulation----------------------------------#
 
@@ -111,6 +109,7 @@ class Network(NetworkGUI):
 
         for i in self.injections:
             i.setNextStepRK4()
+
 
     #-----------------------------Hypnogram--------------------------------------#
 
@@ -250,8 +249,6 @@ class NeuronalPopulation :
        
         if self.F[0] < 0: #FR not negative
             self.F[0] = 0
-
-
 
     #---------------------------------Equations------------------------------------#
 

@@ -4,7 +4,7 @@
 #######################IMPORTATIONS########################
 
 #Calculation
-import numpy as np
+import numpy as np ### not necessary 
 #Gaphical interface
 from tkinter import *
 from tkinter import filedialog
@@ -129,6 +129,7 @@ class NetworkGUI:
 
 
     def getSimParamFrame(self, window):
+
 
         def callbackT(T):
             self.T = float(T.get())
@@ -301,9 +302,7 @@ class NetworkGUI:
 
         allWidgets = frame.winfo_children() #get all widgets from the Object creation window
         compParam = {}
-
         for w in range(0, len(allWidgets)-1, 2):
-
             compParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
             print(allWidgets[w], allWidgets[w+1])
 
