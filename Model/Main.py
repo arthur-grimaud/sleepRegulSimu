@@ -119,7 +119,7 @@ b.grid(column=0, row=3)
 b = tk.Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
 b.grid(column=0, row=0)
 
-b = tk.Button(paramMenu, text="Add NP (WIP)", command=lambda: network.addObjToModel(network),width=25)
+b = tk.Button(paramMenu, text="Add Object to Network", command=lambda: network.addObjToModel(network),width=25)
 b.grid(column=0, row=4)
 
 b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters(filedialog.asksaveasfile(title="Save as", initialdir=os.getcwd(), mode="w", defaultextension=".txt"),network))

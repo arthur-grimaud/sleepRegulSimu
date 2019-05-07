@@ -130,7 +130,6 @@ class NetworkGUI:
 
     def getSimParamFrame(self, window):
 
-
         def callbackT(T):
             self.T = float(T.get())
             print (T.get())
@@ -143,14 +142,6 @@ class NetworkGUI:
             self.saveRate = float(saveRate.get())
             print (saveRate.get())
 
-        def callbackMean(mean):
-            self.mean = float(mean.get())
-            print (mean.get())
-
-        def callbackStd(std):
-            self.std = float(std.get())
-            print (std.get())
-
         T = StringVar()
         T.trace("w", lambda name, index, mode, T=T: callbackT(T))
 
@@ -159,12 +150,6 @@ class NetworkGUI:
 
         saveRate = StringVar()
         saveRate.trace("w", lambda name, index, mode, saveRate=saveRate: callbackSaveRate(saveRate))
-
-        mean = StringVar()
-        mean.trace("w", lambda name, index, mode, mean=mean: callbackMean(mean))
-
-        std = StringVar()
-        std.trace("w", lambda name, index, mode, std=std: callbackStd(std))
 
         frame = Frame(window)
 
@@ -183,17 +168,8 @@ class NetworkGUI:
         e.insert(END, self.saveRate)
         e.grid(column=1, row=3)
 
-        lbl = Label(frame, text="Mean noise").grid(column=0, row=4)
-        e = Entry(frame, textvariable=mean)
-        e.insert(END, self.mean)
-        e.grid(column=1, row=4)
-
-        lbl = Label(frame, text="Std noise").grid(column=0, row=5)
-        e = Entry(frame, textvariable=std)
-        e.insert(END, self.std)
-        e.grid(column=1, row=5)
-
         return frame
+
 
 
 
@@ -325,7 +301,9 @@ class NetworkGUI:
 
         allWidgets = frame.winfo_children() #get all widgets from the Object creation window
         compParam = {}
-        for w in range(0, len(allWidgets), 2):
+
+        for w in range(0, len(allWidgets)-1, 2):
+
             compParam[(allWidgets[w]['text'])] = allWidgets[w+1].get()
             print(allWidgets[w], allWidgets[w+1])
 
