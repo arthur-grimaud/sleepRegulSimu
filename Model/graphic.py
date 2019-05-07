@@ -53,8 +53,6 @@ def whatToDisplay() :
         to_display.append("homeo")
     if choice_hypno.get() == 1 :
         to_display.append("hypno")
-    
-    print(to_display)
 
     return to_display
 
@@ -219,8 +217,6 @@ def createMeanGraphs(files) :
     tk.Radiobutton(window_stdev,  text="No", value="no", variable=standard_deviation,width=45).pack()
     tk.Button(window_stdev,text="Done",command=window_stdev.quit).pack()
     window_stdev.mainloop()
-
-    print(standard_deviation.get())
 
     mean_data = {}
     stat = {}
