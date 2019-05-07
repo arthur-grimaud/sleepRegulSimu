@@ -43,8 +43,8 @@ def loadModel():
     network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
 
-    network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))
-    network.injections.append(network.compartments["NREM"].connections[0].inj)
+    # network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))
+    # network.injections.append(network.compartments["NREM"].connections[0].inj)
 
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
@@ -138,9 +138,10 @@ b.grid(row=2)
 
 b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results),width=75).grid(column=0, row=0)
 b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: GraphFromCSV(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0, row=1)
+b = tk.Button(visuMenu, text="Visualize a mean graph from multiple results", command=lambda: createMeanGraphs(filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0,row=2)
 
 #--------------Statistics menu widgets-------------------
-
+  
 b = tk.Button(statMenu, text="Select results files", command=lambda: doStats(),width=25)
 b.grid(column=0, row=0)
 
