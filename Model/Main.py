@@ -57,8 +57,7 @@ def loadModel():
 def doStats():
     filez=filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select results files",filetypes = (("csv files","*.csv"),("all files","*.*")))
     script = "Rscript RStatsHypno.r"
-    cwd = os.getcwd()
-    run = script + " " + cwd
+    run = script
 
     for selection in filez:
         run = run + " " + selection

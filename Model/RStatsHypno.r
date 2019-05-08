@@ -2,39 +2,44 @@
 # Hypnogram Stats #
 ###################
 
-#--------Importing and formatting data--------#
-
-#Get arguments from command line: cwd, .txt files to read
-args<-commandArgs()
-cat(args,sep="\n")
-length(args)
-
-#Set working directory to source file location
-setwd(args[6])
-
-#testing without passing through python
-# data1<-read.csv(file="statsTest1.csv",header=T, dec=".",sep="\t")
+#----------Using the script without passing through the model --------#
+# #Uncomment this section and modify it to fit your parameters
+# #Skip to "Counting time, bouts, bout duration" section
+# setwd(your_directory)
+# data1<-read.csv(file="results1.csv",header=T, dec=".",sep="\t")
 # data1<-as.data.frame(data1$hypnogram) #hypno column
-# data2<-read.delim(file="statsTest2.csv",header=T, dec=".", sep="\t")
+# data2<-read.delim(file="results2.csv",header=T, dec=".", sep="\t")
 # data2<-as.data.frame(data2$hypnogram)
+# #continue adding data if needed
 # data<-list()
 # data<-append(data,data1)
 # data<-append(data,data2)
+# #continue appending if needed
+
+
+#--------Importing and formatting data--------#
+
+#Get arguments from command line: .csv results files to read
+args<-commandArgs()
+
+#Set working directory to source file location
+#Using the input file location, remove the end (ex: /results1.csv) to get to parent directory
+wd<-gsub("/\\w+\\.[cCsSvVtTxX]{3}","",args[6]) #replace "/(1+ word char).(csv or txt)" with nothing
+setwd(wd)
+
 
 #open multiple files from command line
 data<-list()
 
+#retreive first argument from command line (after default args) args[6] and beyond
 for(i in 1:(length(args))){
-#retreive first argument from command line (after default args and cwd) args[7] and beyond
-  if (i>6){ 
-    temp<-read.csv(file=args[i],header=T, dec=".", sep="\t") #be careful with sep
+  if (i>5){ 
+    temp<-read.csv(file=args[i],header=T, dec=".", sep="\t")
     tempHypno<-as.data.frame(temp$hypnogram)
     data<-append(data,tempHypno)
-    step<-temp[[1]][2]-temp[[1]][1]
-    step
+    step<-temp[[1]][2]-temp[[1]][1] #to be used in conversion to minutes
   }
 }
-#data
 
 
 #--------Counting time, bouts, bout duration--------#
@@ -86,7 +91,7 @@ for (i in 1:(length(data))){ #for every input file
         timeNREM<-0  #reset time in bout
         boutNREM<-boutNREM+1 #Correcting bout count by including final state
       }
-    #REM
+    #REM, same comments as NREM
     }else if(data[[i]][j] == 0.5){
       REM<-REM+1
       if (j<length(data[[i]]) && data[[i]][j+1] != data[[i]][j]) { 
@@ -102,7 +107,7 @@ for (i in 1:(length(data))){ #for every input file
         timeREM<-0
         boutREM<-boutREM+1
       }
-    #WAKE  
+    #WAKE, same comments as NREM
     }else{
       wake<-wake+1
       if (j<length(data[[i]]) && data[[i]][j+1] != data[[i]][j]) { 
@@ -121,7 +126,6 @@ for (i in 1:(length(data))){ #for every input file
     }
     total<-total+1
   }
-
   
   #make df for %time spent and bouts
   totals[i,]<-cbind(NREM,REM,wake,total)
@@ -159,7 +163,7 @@ boutDurDF$NREM = as.numeric(boutDurDF$NREM)
 boutDurDF$REM = as.numeric(boutDurDF$REM)
 boutDurDF$wake = as.numeric(boutDurDF$wake)
 #convert dt (s) to minutes
-boutDurDF<-boutDurDF/60
+boutDurDF<-boutDurDF/60*step
 
 
 #--------Statistics--------#
@@ -226,11 +230,10 @@ boutsSD<-sapply(bouts, sd, na.rm = TRUE)
 boutsSD<-cbind(boutsSD,boutMeans)
 names(boutsSD)<-cbind("SD","mean","state")
 
-# Duration of bouts
+# Duration of bouts in minutes
 btMeans<-colMeans(boutDurDF,na.rm=TRUE)
 btMeans<-data.frame(btMeans)
 btMeans[,2]<-rbind("NREM","REM","wake")
-#CONVERSION TO MINUTES
 
 boutDurSD<-sapply(boutDurDF, sd, na.rm = TRUE)
 boutDurSD<-cbind(boutDurSD,btMeans)
