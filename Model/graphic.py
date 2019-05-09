@@ -113,7 +113,6 @@ def createGraph(data,option=0):
     for population in data['firing rates'].keys() :
         if population not in ["wake", "NREM", "REM"] :
             colors[population] = "xkcd:"+random.choice(listColors)
-            del listColors[listColors.index(colors[population])]
 
     step_hour = 5
     time_ms = []
@@ -276,6 +275,8 @@ def createMeanGraphs(files) :
 #     'time' : [0,1,2,3,4,5,6,7,8,9],
 #     'R_C' : [1,2,3,4,5,6,7,8,9,10],
 #     'R_F' : [2,3,4,5,6,7,8,9,10,11],
+#     'A_C' : [4,5,6,7,8,9,1,2,3,4],
+#     'A_F' : [4,5,6,7,8,9,8,7,6,5],
 #     'hypnogram' : [0,1,0.5,1,0,0.5,1,0,0,1],
 #     "homeostatic" : [9,8,7,6,5,4,3,2,1,0]
 # }
