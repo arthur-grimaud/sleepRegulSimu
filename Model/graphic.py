@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 from pylab import xticks
 from pylab import yticks
 import csv
-import statistics
+import numpy
+import random
+
 
 ### Choose what to display ###
 
@@ -107,6 +109,12 @@ def createGraph(data,option=0):
     }
     data = transformData(data,option)
 
+    listColors = ["cloudy blue", "dust", "warm purple", "lime green", "pink", "lilac", "dark pink","cyan","indigo","forest green","orange","olive green", "brick red", "sea blue", "cream", "scarlet", "raspberry", "greenish blue"]
+    for population in data['firing rates'].keys() :
+        if population not in ["wake", "NREM", "REM"] :
+            colors[population] = "xkcd:"+random.choice(listColors)
+            del listColors[listColors.index(colors[population])]
+
     step_hour = 5
     time_ms = []
     time_h = []
@@ -127,7 +135,7 @@ def createGraph(data,option=0):
         if option == 'stdev' :
             for stdev in ['stdev min','stdev max'] :
                 for (fr, values) in data[stdev]["firing rates"].items() :
-                    sub1=plt.plot(data['time'], values, colors[fr], linewidth=0.25)
+                    sub1=plt.plot(data['time'], values, color=colors[fr], linewidth=0.25)
                     sub1=plt.fill_between(data['time'],values,data['firing rates'][fr],color=colors[fr],alpha=0.25)
 
         xticks(time_ms,time_h)
@@ -140,16 +148,16 @@ def createGraph(data,option=0):
         sub2=plt.subplot(3,1,2)
         if 'C' in to_display :
             for (c,values) in data["concentrations"].items() :
-                sub2=plt.plot(data['time'], values, colors[c], label=c)
+                sub2=plt.plot(data['time'], values, color=colors[c], label=c)
         if 'homeo' in to_display :
-            sub2=plt.plot(data['time'],data['homeostatic'],colors['homeostatic'],label="homeostatic")
+            sub2=plt.plot(data['time'],data['homeostatic'],color=colors['homeostatic'],label="homeostatic")
         xticks(time_ms,time_h)
             
         # show the standard deviation on the mean graphs
         if option == 'stdev' :
             for stdev in ['stdev min','stdev max'] :
                 for (c,values) in data[stdev]["concentrations"].items() :
-                    sub2=plt.plot(data['time'], values, colors[c], linewidth=0.25)
+                    sub2=plt.plot(data['time'], values, color=colors[c], linewidth=0.25)
                     sub2=plt.fill_between(data['time'],values,data['concentrations'][c],color=colors[c],alpha=0.25)
 
         plt.ylabel("Concentrations")
@@ -245,7 +253,7 @@ def createMeanGraphs(files) :
                 mean_data[variable+'_stdev_min'] = []
                 mean_data[variable+'_stdev_max'] = []
                 for k in range(len(values)) : 
-                    stdev = statistics.stdev(values[k])
+                    stdev = numpy.std(values[k])
                     mean_data[variable+'_stdev_min'].append(mean_data[variable][k]-stdev)
                     mean_data[variable+'_stdev_max'].append(mean_data[variable][k]+stdev)
     
@@ -263,3 +271,13 @@ def createMeanGraphs(files) :
         createGraph(mean_data,'stdev')
     else : 
         createGraph(mean_data)
+
+# files = {
+#     'time' : [0,1,2,3,4,5,6,7,8,9],
+#     'R_C' : [1,2,3,4,5,6,7,8,9,10],
+#     'R_F' : [2,3,4,5,6,7,8,9,10,11],
+#     'hypnogram' : [0,1,0.5,1,0,0.5,1,0,0,1],
+#     "homeostatic" : [9,8,7,6,5,4,3,2,1,0]
+# }
+
+# createGraph(files)
