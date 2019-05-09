@@ -28,7 +28,15 @@ def loadModel():
     print("### Neuronal Populations OK ###\n")
 
     for key in cycle.keys():
-        network.addHSD(cycle[key])
+        for pop_ext in conn.keys() :
+            i = 0
+            for pop_source in conn[pop_ext] :
+                if pop_source == key :
+                    print(pop_ext, pop_source)
+                    theta_X = pop[pop_ext]["g_NT_pop_list"][i]
+                    print(theta_X)
+                i+=1
+        network.addHSD(cycle[key],theta_X)
     print("### Homeostatic Sleep Drive OK ###\n")
 
     # for key in cycle.keys():
@@ -40,9 +48,9 @@ def loadModel():
         i = 0
         for pop_source in conn[pop_ext] :
             if pop_ext == 'homeostatic' or pop_ext == 'HSD':
-                network.addNPConnection("HSD-NP",pop_source,"HSD",cycle[pop_ext]["g_NT_pop_list"][i])
+                network.addNPConnection("NP-HSD",pop_source,"HSD",cycle[pop_ext]["g_NT_pop_list"][i])
             elif pop_source == 'homeostatic' or pop_source == 'HSD':
-                network.addNPConnection("NP-HSD","HSD",pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
+                network.addNPConnection("HSD-NP","HSD",pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             else :
                 network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             i+=1

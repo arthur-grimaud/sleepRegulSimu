@@ -162,8 +162,8 @@ class Network(NetworkGUI):
     def addNP(self, populationParam): #Add an instance of NeuronalPopulation to the compartments dictionnary
         self.compartments [populationParam["name"]] = NeuronalPopulation(populationParam)
 
-    def addHSD(self, cycleParam): #Add an instance of HomeostaticSleepDrive to the compartments dictionnary
-        self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam)
+    def addHSD(self, cycleParam, theta_X): #Add an instance of HomeostaticSleepDrive to the compartments dictionnary
+        self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam, theta_X)
 
     def addNPConnection(self, type, sourceName, targetName, weight): #Add a connection object to the concerned compartment
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
@@ -318,7 +318,7 @@ class NeuronalPopulation :
 class HomeostaticSleepDrive:
     # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
 
-    def __init__(self, myCycle):
+    def __init__(self, myCycle, theta_X):
         self.name = "HSD"
 
         #variable
@@ -327,7 +327,7 @@ class HomeostaticSleepDrive:
         self.H_max = float(myCycle["H_max"])
         self.tau_hw = float(myCycle["tau_hw"])
         self.tau_hs = float(myCycle["tau_hs"])
-        self.theta_X = float(myCycle["g_NT_pop_list"][0])
+        self.theta_X = float(theta_X)
 
         self.connections = []
 
