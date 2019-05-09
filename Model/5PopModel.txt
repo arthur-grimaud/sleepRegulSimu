@@ -1,0 +1,88 @@
+* population = LC
+g_NT_pop_list = 3.5 3.5 -1.5 -1.5
+pop_list = R WR LC VLPO
+F = 5.0
+C = 0.0
+F_max = 6.5
+beta = 2
+alpha = 0.75
+tau_pop = 25.0
+concentration = N
+gamma = 5.0
+tau_NT = 25.0
+*
+
+* population = DR
+g_NT_pop_list = 3.5 3.5 -1.5 -1.5
+pop_list = R WR DR VLPO
+F = 5.0
+C = 0.0
+F_max = 6.5
+beta = 2
+alpha = 0.75
+tau_pop = 25.0
+concentration = S
+gamma = 5.0
+tau_NT = 25.0
+*
+
+* population = VLPO
+g_NT_pop_list = -2.0 -2.0 -0.5 -7.0
+pop_list = LC DR VLPO HSD
+F = 0.0
+C = 0.0
+F_max = 5.0
+beta = -7
+alpha = 0.25
+tau_pop = 10.0
+concentration = G
+gamma = 4.0
+tau_NT = 10.0
+*
+
+* population = WR
+g_NT_pop_list = 1.0 1.0 -1.7
+pop_list = R WR VLPO
+F = 5.0
+C = 0.0
+F_max = 5.0
+beta = -0.2
+alpha = 0.25
+tau_pop = 10.0
+concentration = A
+gamma = 3.0
+tau_NT = 10.0
+*
+
+* population = R
+g_NT_pop_list = 2.5 2.5 -3.5 -3.5 -1.25
+pop_list = R WR LC DR VLPO
+F = 0.0
+C = 0.0
+F_max = 5.0
+beta = -0.5
+alpha = 0.25
+tau_pop = 1.0
+concentration = A
+gamma = 3.0
+tau_NT = 10.0
+*
+
++ cycle = HSD
+h = 0.25
+H_max = 1.0
+tau_hw = 600.0
+tau_hs = 300.0
+theta_X = -7.0
+g_NT_pop_list = 0.0 0.0
+pop_list = LC DR
++
+
+#
+T = 1000.0
+res = 10.0
+t = 0
+mean = 0.0
+std = 0.001
+#
+
