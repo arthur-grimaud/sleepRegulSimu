@@ -24,7 +24,7 @@ F_max = 5.0
 alpha = 0.175
 beta = 1.5 homeostatic
 tau_pop = 600E3
-g_NT_pop_list = -2.0 0
+g_NT_pop_list = -2.0 1.5
 pop_list = wake homeostatic
 
 concentration = G
@@ -57,7 +57,7 @@ H_max = 1.0
 tau_hw = 34830E3
 tau_hs = 30600E3
 pop_list = wake
-g_NT_pop_list = 2.0
+g_NT_pop_list = 0.0
 +
 
 // lines beginning with an "#" corresponds to the simulation parameters
