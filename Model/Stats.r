@@ -2,7 +2,16 @@
 # Hypnogram Stats #
 ###################
 
+#--------Packages--------#
+
+#install.packages("gridExtra")
+require(gridExtra)
+
+#install.packages("ggplot2")
+library(ggplot2)
+
 #----------Using the script without passing through the model --------#
+
 # #Uncomment this section and modify it to fit your parameters
 # #Skip to "Counting time, bouts, bout duration" section
 # setwd(your_directory)
@@ -241,9 +250,6 @@ names(boutDurSD)<-cbind("SD","mean","state")
 
 #--------Barplots--------#
 
-#install.packages("ggplot2")
-library(ggplot2)
-
 # %Time
 
 pp<-ggplot(data=totalsSD, aes(x=state, y=percent)) +
@@ -267,9 +273,6 @@ pp3<-ggplot(data=boutDurSD, aes(x=state, y=mean)) +
 
 
 #Save plots
-#install.packages("gridExtra")
-require(gridExtra)
-
 plots<-grid.arrange(pp, pp2, pp3, ncol=3)
 ggsave("plotStats.png", plot = plots, device = NULL, path = NULL,
        scale = 1)
