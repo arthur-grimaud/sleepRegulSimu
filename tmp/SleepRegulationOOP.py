@@ -37,17 +37,27 @@ class Network(NetworkGUI):
         self.A = [0.5, 0.5, 1.0, 1.0]
 
         if len(args) == 1: #If the parameters dictionnary has been given to the constructor
-            self.step = int(args[0]["t"])
-            self.T = int(args[0]["T"])
+            self.step = float(args[0]["t"])
+            self.T = float(args[0]["T"])
             self.res = float(args[0]["res"])
             self.dt = 1E3 / self.res
             self.t = 0
+            self.mean = float(args[0]["mean"])
+            self.std = float(args[0]["std"])
+
+    #-----------------------------------Noise-----------------------------------#
+
+    def additiveWhiteGaussianNoise(self): #Returns white noise from a Gaussian distribution
+        meanNoise = 0.0 # Mean white noise value in [Hz]
+        stdNoise = 0.001 # STD white noise value in [Hz]
+        noiseSample = np.random.normal(meanNoise, stdNoise)
+        return noiseSample
 
     #-----------------------------------Setter------------------------------------#
 
     def setSimParam(self, simParam):  #Set the simulation parameters from a dictionnary
-        self.step = int(simParam["t"])
-        self.T = int(simParam["T"])
+        self.step = float(simParam["t"])
+        self.T = float(simParam["T"])
         self.res = float(simParam["res"])
         self.dt = 1E3 / self.res
         self.t = 0
@@ -64,24 +74,22 @@ class Network(NetworkGUI):
                 print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
-                print(self.t)
-                print("wakeF",self.compartments["wake"].F[0])
-                print("NREMF",self.compartments["NREM"].F[0])
-                print("REMF",self.compartments["REM"].F[0])
-                print("wakeC",self.compartments["wake"].C[0])
-                print("nremC",self.compartments["NREM"].C[0])
-                print("remC",self.compartments["REM"].C[0])
+            print("------------------------------")
 
-            self.nextStepRK4() # call next step
+            self.nextStepEuler() # call next step
 
             self.step += 1
             self.t = math.floor(self.step/self.res) # current time since simulation time in sc
 
         # self.writeInFile("results.csv",self.results) # Write results in a file
 
-    def nextStep(self): #call next step method in each compartments
+    def nextStepEuler(self): #call next step method in each compartments
         for c in self.compartments .values():
-            c.setNextStep(self.dt, "Euler")
+            if isinstance(c,NeuronalPopulation):
+                noise = self.additiveWhiteGaussianNoise()
+                c.setNextStepEuler(self.dt, 0, noise)
+            else:
+                c.setNextStepEuler(self.dt, 0)
 
     def nextStepRK4(self):
         for N in range(4):
@@ -90,25 +98,42 @@ class Network(NetworkGUI):
             for i in self.injections:
                 i.setNextSubStepRK4(self.dt,N,self.A[N])
 
-        for c in self.compartments .values():
-            c.setNextStepRK4()
+        for c in self.compartments.values():
+            if isinstance(c,NeuronalPopulation):
+                noise = self.additiveWhiteGaussianNoise()
+                c.setNextStepRK4(noise)
+            else:
+                c.setNextStepRK4()
+
         for i in self.injections:
             i.setNextStepRK4()
+
 
     #-----------------------------Hypnogram--------------------------------------#
 
     def getHypno(self): #Return the current state of the model
-        if self.compartments["wake"].C[0] < 0.4 :
-            if self.compartments["REM"].C[0] > 0.4 :
-                return 0.5
-            else :
-                return 0
-        else :
-            return 1
+        # if self.compartments["wake"].C[0] < 0.4 :
+        #     if self.compartments["REM"].C[0] > 0.4 :
+        #         return 0.5
+        #     else :
+        #         return 0
+        # else :
+        #     return 1
+        return 1
 
     #-------------------------------Write----------------------------------------#
-    
+
+    def fileHeader(self) :
+        header = "### "
+        for (compartment,values) in self.compartments.items() :
+            if "concentration" in dir(values) :
+                print(compartment,"--->",values.concentration)
+                header += str(compartment)+"--->"+str(values.concentration)+" "
+        header+="\n"
+        return header
+
     def writeInFile(self,filename,data):
+        filename.write(self.fileHeader())
         # with open(filename, 'w') as f:
         writer = csv.writer(filename, delimiter='\t')
         writer.writerows(zip(*data))
@@ -176,7 +201,7 @@ class Network(NetworkGUI):
     def save_parameters(self) :
         string = "#\n"
         for parameter in vars(self) :
-            if parameter == 't' or parameter == 'T' or parameter == 'res' :
+            if parameter == 't' or parameter == 'T' or parameter == 'res' or parameter == 'mean' or parameter == 'std':
                 string += parameter+" = "+str(getattr(self,parameter))+"\n"
         string += "#\n\n"
         return string
@@ -224,24 +249,24 @@ class NeuronalPopulation :
     #-----------------------------------??------------------------------------#
 
     def setNextSubStepRK4(self,dt,N,coef):
+
         self.F[N+1] = self.F[0] + coef * dt * self.getFR(N)
         self.C[N+1] = self.C[0] + coef * dt * self.getC(N)
 
-    def setNextStepRK4(self):
-        self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + self.generationWhiteGaussianNoise() #Includes noise
+    def setNextStepRK4(self, noise):
+        print(self.name, " F ", self.F[0])
+        print(self.name, " C ", self.C[0])
+        self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + noise
         self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
-       
+
         if self.F[0] < 0: #FR not negative
             self.F[0] = 0
 
-
-    #-----------------------------------Noise-----------------------------------#
-
-    def generationWhiteGaussianNoise(self): #Return white noise from a Gaussian distribution
-        meanNoise = 0.0 # Mean white noise value in [Hz]
-        stdNoise = 0.002 # STD white noise value in [Hz]
-        noiseSample = np.random.normal(meanNoise, stdNoise)
-        return noiseSample
+    def setNextStepEuler(self,dt,N, noise):
+        print(self.name, " F ", self.F[0])
+        print(self.name, " C ", self.C[0])
+        self.F[0]  = self.F[0] + dt * self.getFR(N)
+        self.C[0] = self.C[0] + dt * self.getC(N)
 
     #---------------------------------Equations------------------------------------#
 
@@ -254,6 +279,8 @@ class NeuronalPopulation :
         for c in self.connections:
             if c.type == "NP-NP":
                 result += c.getConnectVal(N)
+
+        print(self.name, " i ", result)
         return result
 
     def getC(self,N): #equation of the neurotransmitter concentration released by the population
@@ -320,8 +347,7 @@ class HomeostaticSleepDrive:
         self.H_max = float(myCycle["H_max"])
         self.tau_hw = float(myCycle["tau_hw"])
         self.tau_hs = float(myCycle["tau_hs"])
-        #self.f_X = myCycle["f_X"]
-        self.theta_X = float(myCycle["theta_X"])
+        self.theta = float(myCycle["theta"])
 
         self.connections = []
 
@@ -334,14 +360,19 @@ class HomeostaticSleepDrive:
         self.h[N+1] = self.h[0] + coef * dt * self.getH(N)
 
     def setNextStepRK4(self):
+        print(self.name, " H ", self.h[0])
         self.h[0] = (-3*self.h[0] + 2*self.h[1] + 4*self.h[2] + 2*self.h[3] + self.h[4])/6
+
+    def setNextStepEuler(self,dt,N):
+        self.h[0]  = self.h[0] + dt * self.getH(N)
+
 
 
     #---------------------------------Equations------------------------------------#
 
     def getH(self,N):
         #print(self.theta_X-self.getSourceFR())
-        return float((self.H_max-self.h[N])/self.tau_hw*self.heaviside(self.getSourceFR(N)-self.theta_X) - self.h[N]/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR(N)))
+        return float((self.H_max-self.h[N])/self.tau_hw*self.heaviside(self.getSourceFR(N)-self.theta) - self.h[N]/self.tau_hs*self.heaviside(self.theta-self.getSourceFR(N)))
 
     def getSourceFR(self,N):
         if len(self.connections) > 0:
@@ -367,9 +398,11 @@ class HomeostaticSleepDrive:
                 string += parameter+" = "+str(getattr(self,parameter)[0])+"\n"
             elif parameter == 'connections' :
                 tmp = {}
-                tmp["f_X"] = []
+                tmp["g_NT_pop_list"] = []
+                tmp["pop_list"] = []
                 for connection in getattr(self,parameter) :
-                    tmp["f_X"].append(connection.source.name)
+                    tmp["g_NT_pop_list"].append(connection.weight)
+                    tmp["pop_list"].append(connection.source.name)
                 for (key,value) in tmp.items() :
                     string += key+" ="
                     for element in value :
@@ -400,7 +433,7 @@ class Connection:
         self.weight = float(weight) #Weight of the connection
         self.inj = None
 
-        print('Connection object',self.source.name ,'-',self.target.name ,'created')
+        print('Connection object',self.source.name ,'-',self.target.name ,'created with weight ',self.weight)
 
     def addInjE(self,injObj):
         self.type = "NP-MIE-NP" # MIE : MicroInjection Excitatory (Agonist)
@@ -414,10 +447,13 @@ class Connection:
 
     def getConnectVal(self,N):
         if self.type == "NP-NP":
+            #print(self.source.name," " ,self.source.C[N] * self.weight, " " ,self.target.name)
             return self.source.C[N] * self.weight
         if self.type == "HSD-NP":
+            #print(self.source.name," " ,self.source.h[N] * self.weight, " " ,self.target.name)
             return self.source.h[N] * self.weight
         if self.type == "NP-HSD":
+            #print(self.source.name," " ,self.source.F[N], " " ,self.target.name)
             return self.source.F[N]
         if self.type == "NP-MIE-NP": #microinjections of agonist simulations
             return Mi*self.source.C[N]+Pi
