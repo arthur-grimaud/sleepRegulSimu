@@ -168,12 +168,12 @@ class NetworkGUI:
 
         frame = Frame(window)
 
-        lbl = Label(frame, text="T").grid(column=0, row=1)
+        lbl = Label(frame, text="T (s)").grid(column=0, row=1)
         e = Entry(frame, textvariable=T)
         e.insert(END, self.T)
         e.grid(column=1, row=1)
 
-        lbl = Label(frame, text="res").grid(column=0, row=2)
+        lbl = Label(frame, text="res (iterations/s)").grid(column=0, row=2)
         e = Entry(frame, textvariable=res)
         e.insert(END, self.res)
         e.grid(column=1, row=2)
@@ -183,12 +183,12 @@ class NetworkGUI:
         e.insert(END, self.saveRate)
         e.grid(column=1, row=3)
 
-        lbl = Label(frame, text="Mean noise").grid(column=0, row=4)
+        lbl = Label(frame, text="Mean noise (Hz)").grid(column=0, row=4)
         e = Entry(frame, textvariable=mean)
         e.insert(END, self.mean)
         e.grid(column=1, row=4)
 
-        lbl = Label(frame, text="Std noise").grid(column=0, row=5)
+        lbl = Label(frame, text="Std noise (Hz)").grid(column=0, row=5)
         e = Entry(frame, textvariable=std)
         e.insert(END, self.std)
         e.grid(column=1, row=5)
