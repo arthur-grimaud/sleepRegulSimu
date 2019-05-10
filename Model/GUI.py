@@ -4,7 +4,7 @@
 #######################IMPORTATIONS########################
 
 #Calculation
-import numpy as np ### not necessary 
+import numpy as np ### not necessary
 #Gaphical interface
 from tkinter import *
 from tkinter import filedialog
@@ -167,6 +167,20 @@ class NetworkGUI:
         std.trace("w", lambda name, index, mode, std=std: callbackStd(std))
 
         frame = Frame(window)
+
+        resMethod = StringVar()
+        optMethod = ["Euler", "RK4"]
+
+        def changeMethod(new):
+            resMethod = new
+            print(resMethod)
+            self.resMethod = new
+
+
+
+        lbl = Label(frame, text="Select Resolution Method").grid(column=0, row=0)
+        optMenu = OptionMenu(frame, resMethod, *optMethod, command=changeMethod).grid(column=1, row=0)
+
 
         lbl = Label(frame, text="T").grid(column=0, row=1)
         e = Entry(frame, textvariable=T)

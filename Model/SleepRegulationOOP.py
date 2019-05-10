@@ -32,6 +32,7 @@ class Network(NetworkGUI):
         self.dt = None # Time step in milliseconds
         self.saveRate = 100 #Save rate in number of steps
         self.t = 0
+        self.resMethod = "Euler"
 
         #RK4 coefficient
         self.A = [0.5, 0.5, 1.0, 1.0]
@@ -74,9 +75,14 @@ class Network(NetworkGUI):
                 print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
-            print("------------------------------")
+            #print("------------------------------")
 
-            self.nextStepEuler() # call next step
+            if self.resMethod == "Euler":
+                self.nextStepEuler() # call next step
+            elif self.resMethod == "RK4":
+                self.nextStepRK4()
+            else:
+                print("Error: ODE resolution method not defined")
 
             self.step += 1
             self.t = math.floor(self.step/self.res) # current time since simulation time in sc
@@ -161,8 +167,8 @@ class Network(NetworkGUI):
     def addNP(self, populationParam): #Add an instance of NeuronalPopulation to the compartments dictionnary
         self.compartments [populationParam["name"]] = NeuronalPopulation(populationParam)
 
-    def addHSD(self, cycleParam, theta_X): #Add an instance of HomeostaticSleepDrive to the compartments dictionnary
-        self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam, theta_X)
+    def addHSD(self, cycleParam): #Add an instance of HomeostaticSleepDrive to the compartments dictionnary
+        self.compartments ['HSD'] = HomeostaticSleepDrive(cycleParam)
 
     def addNPConnection(self, type, sourceName, targetName, weight): #Add a connection object to the concerned compartment
         self.compartments [targetName].connections.append(Connection(type, self.compartments [sourceName],self.compartments [targetName],weight))
@@ -244,8 +250,8 @@ class NeuronalPopulation :
         self.C[N+1] = self.C[0] + coef * dt * self.getC(N)
 
     def setNextStepRK4(self, noise):
-        print(self.name, " F ", self.F[0])
-        print(self.name, " C ", self.C[0])
+        #print(self.name, " F ", self.F[0])
+        #print(self.name, " C ", self.C[0])
         self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + noise
         self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
 
@@ -253,16 +259,19 @@ class NeuronalPopulation :
             self.F[0] = 0
 
     def setNextStepEuler(self,dt,N, noise):
-        print(self.name, " F ", self.F[0])
-        print(self.name, " C ", self.C[0])
+
         self.F[0]  = self.F[0] + dt * self.getFR(N)
-        self.C[0] = self.C[0] + dt * self.getC(N)
+        self.C[0] = self.C[0] + dt * self.getCEuler()
+        #print(self.name, " F ", self.F[0])
+        #print(self.name, " C ", self.C[0])
+        #print("DT", dt )
 
     #---------------------------------Equations------------------------------------#
 
     def getFR(self,N): #Equation of the firing rate
-
-        return ((self.F_max *(0.5*(1 + np.tanh((self.getI(N) + self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop
+        #print("((",self.F_max, "*(0.5*(1 + np.tanh((", self.getI(N)," +", self.getBeta(N),")/",self.alpha,")))) - ",self.F[N], " )/",self.tau_pop)
+        #print("(self.getI(N) - self.getBeta(N))",((self.F_max *(0.5*(1 + np.tanh((self.getI(N) - self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop)
+        return ((self.F_max *(0.5*(1 + np.tanh((self.getI(N) - self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop
 
     def getI(self,N): #Get I from the connection in self.connections
         result = 0
@@ -270,19 +279,22 @@ class NeuronalPopulation :
             if c.type == "NP-NP":
                 result += c.getConnectVal(N)
 
-        print(self.name, " i ", result)
+        #print(self.name, " i ", result)
         return result
 
     def getC(self,N): #equation of the neurotransmitter concentration released by the population
         return (np.tanh(self.F[N+1]/self.gamma) - self.C[N])/self.tau_NT
 
-    def getBeta(self,N): #used to handle the homeostatic sleep drive
-        if len(self.beta) == 2 :
-            for c in self.connections:
-                if c.type == "HSD-NP":
-                    return c.getConnectVal(N)
+    def getCEuler(self): #equation of the neurotransmitter concentration released by the population
+        return (np.tanh(self.F[0]/self.gamma) - self.C[0])/self.tau_NT
 
-        return -float(self.beta[0])
+    def getBeta(self,N): #used to handle the homeostatic sleep drive
+
+        for c in self.connections:
+            if c.type == "HSD-NP":
+                return c.getConnectVal(N)
+
+        return float(self.beta[0])
 
     #---------------------------------Recorder------------------------------------#
 
@@ -328,7 +340,7 @@ class NeuronalPopulation :
 class HomeostaticSleepDrive:
     # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
 
-    def __init__(self, myCycle, theta_X):
+    def __init__(self, myCycle):
         self.name = "HSD"
 
         #variable
@@ -337,7 +349,7 @@ class HomeostaticSleepDrive:
         self.H_max = float(myCycle["H_max"])
         self.tau_hw = float(myCycle["tau_hw"])
         self.tau_hs = float(myCycle["tau_hs"])
-        self.theta_X = float(theta_X)
+        self.theta = float(myCycle["theta"])
 
         self.connections = []
 
@@ -350,7 +362,7 @@ class HomeostaticSleepDrive:
         self.h[N+1] = self.h[0] + coef * dt * self.getH(N)
 
     def setNextStepRK4(self):
-        print(self.name, " H ", self.h[0])
+        #print(self.name, " H ", self.h[0])
         self.h[0] = (-3*self.h[0] + 2*self.h[1] + 4*self.h[2] + 2*self.h[3] + self.h[4])/6
 
     def setNextStepEuler(self,dt,N):
@@ -361,12 +373,16 @@ class HomeostaticSleepDrive:
     #---------------------------------Equations------------------------------------#
 
     def getH(self,N):
-        #print(self.theta_X-self.getSourceFR())
-        return float((self.H_max-self.h[N])/self.tau_hw*self.heaviside(self.getSourceFR(N)-self.theta_X) - self.h[N]/self.tau_hs*self.heaviside(self.theta_X-self.getSourceFR(N)))
+        #print(self.theta-self.getSourceFR())
+        return float((self.H_max-self.h[N])/self.tau_hw * self.heaviside(self.getSourceFR(N)-self.theta) - self.h[N]/self.tau_hs*self.heaviside(self.theta-self.getSourceFR(N)))
 
     def getSourceFR(self,N):
-        if len(self.connections) > 0:
-            return self.connections[0].getConnectVal(N)
+        res = 0
+        for c in self.connections:
+            if c.type == "NP-HSD":
+                res += self.connections[0].getConnectVal(N)
+
+        return res
 
     def heaviside(self,X):
         if(X >= 0):
@@ -437,7 +453,7 @@ class Connection:
 
     def getConnectVal(self,N):
         if self.type == "NP-NP":
-            #print(self.source.name," " ,self.source.C[N] * self.weight, " " ,self.target.name)
+            #print(self.source.name," " ,self.source.C[N] * self.weight, " " ,self.target.name, "( C: ",self.source.C[N]," * w:",self.weight,") N:", N )
             return self.source.C[N] * self.weight
         if self.type == "HSD-NP":
             #print(self.source.name," " ,self.source.h[N] * self.weight, " " ,self.target.name)
