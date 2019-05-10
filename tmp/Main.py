@@ -11,7 +11,7 @@ from SleepRegulationOOP import NeuronalPopulation
 from SleepRegulationOOP import HomeostaticSleepDrive
 from SleepRegulationOOP import Network
 from SleepRegulationOOP import Injection
-from graphique import *
+from graphic import *
 import os
 
 network = Network()
@@ -34,26 +34,35 @@ def loadModel():
     # for key in cycle.keys():
     #     network.addNP(conn[key])
 
+    print(conn)
+
     for pop_ext in conn.keys() :
         i = 0
         for pop_source in conn[pop_ext] :
-            network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
+            if pop_ext == 'homeostatic' or pop_ext == 'HSD':
+                network.addNPConnection("NP-HSD",pop_source,"HSD",cycle[pop_ext]["g_NT_pop_list"][i])
+            elif pop_source == 'homeostatic' or pop_source == 'HSD':
+                print("ICIIIIIIIIIIIIIIIIIII")
+                network.addNPConnection("HSD-NP","HSD",pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
+            else :
+                network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             i+=1
-    network.addNPConnection("HSD-NP","HSD","NREM",1.5)
-    network.addNPConnection("NP-HSD","wake","HSD",0)
     print("### Connections OK ###\n")
 
-    network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))
-    network.injections.append(network.compartments["NREM"].connections[0].inj)
+    # network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))
+    # network.injections.append(network.compartments["NREM"].connections[0].inj)
 
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
+
+    for (compartment,values) in network.compartments.items() :
+        if "concentration" in dir(values) :
+            print(compartment,"--->",values.concentration)
 
 
 def doStats():
     filez=filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select results files",filetypes = (("csv files","*.csv"),("all files","*.*")))
-    script = "Rscript RStatsHypno.r"
-    cwd = os.getcwd()
-    run = script + " " + cwd
+    script = "Rscript Stats.r"
+    run = script
 
     for selection in filez:
         run = run + " " + selection
@@ -67,7 +76,6 @@ def doStats():
 window = tk.Tk()
 window.title("SR sim")
 window.geometry()
-
 
 n = ttk.Notebook(window)   # Creation of tab system
 n.pack()
@@ -119,10 +127,10 @@ b.grid(column=0, row=3)
 b = tk.Button(paramMenu, text="Display Compartments Parameters", command=lambda: network.displayCompParam(paramMenu).grid(column=0, row=1),width=25)
 b.grid(column=0, row=0)
 
-b = tk.Button(paramMenu, text="Add NP (WIP)", command=lambda: network.addObjToModel(network),width=25)
+b = tk.Button(paramMenu, text="Add Object to Network", command=lambda: network.addObjToModel(network),width=25)
 b.grid(column=0, row=4)
 
-b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters('test.txt',network))
+b = tk.Button(paramMenu, text="Save Parameters", command=lambda: write_parameters(filedialog.asksaveasfile(title="Save as", initialdir=os.getcwd(), mode="w", defaultextension=".txt"),network))
 b.grid(column=0, row = 6)
 
 b = tk.Button(paramMenu, text="Add injection", command=lambda: network.getInjectionCreationWindow())
@@ -133,13 +141,12 @@ b = tk.Button(runMenu, text="Run sim", command=lambda: network.getResults(),widt
 b.grid(row=0)
 b = tk.Button(runMenu, text="Select variables to save(WIP)", command=lambda: network.displayCompVar().grid(column=0, row=2),width=25)
 b.grid(row=2)
-# b = tk.Button(runMenu, text="Save the results", command=lambda: network.writeInFile(filedialog.asksaveasfile(title="Save as", initialdir=os.getcwd(), mode="w", defaultextension=".csv"),network.results))
-b.grid(row=3)
 
 #--------------Visualization menu widgets-------------------
 
 b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results),width=75).grid(column=0, row=0)
 b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: GraphFromCSV(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0, row=1)
+b = tk.Button(visuMenu, text="Visualize a mean graph from multiple results", command=lambda: createMeanGraphs(filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0,row=2)
 
 #--------------Statistics menu widgets-------------------
 
