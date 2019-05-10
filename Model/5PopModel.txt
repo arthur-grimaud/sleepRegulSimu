@@ -27,8 +27,8 @@ tau_NT = 25.0
 *
 
 * population = VLPO
-g_NT_pop_list = -2.0 -2.0 -0.5 -7.0
-pop_list = LC DR VLPO HSD
+g_NT_pop_list = -2.0 -2.0 -0.5
+pop_list = LC DR VLPO
 F = 0.0
 C = 0.0
 F_max = 5.0
@@ -73,7 +73,6 @@ h = 0.25
 H_max = 1.0
 tau_hw = 600.0
 tau_hs = 300.0
-theta_X = -7.0
 g_NT_pop_list = 0.0 0.0
 pop_list = LC DR
 +
@@ -85,4 +84,3 @@ t = 0
 mean = 0.0
 std = 0.001
 #
-

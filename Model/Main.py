@@ -27,6 +27,7 @@ def loadModel():
         network.addNP(pop[key])
     print("### Neuronal Populations OK ###\n")
 
+    theta_X = 0
     for key in cycle.keys():
         for pop_ext in conn.keys() :
             i = 0
@@ -50,6 +51,7 @@ def loadModel():
             if pop_ext == 'homeostatic' or pop_ext == 'HSD':
                 network.addNPConnection("NP-HSD",pop_source,"HSD",cycle[pop_ext]["g_NT_pop_list"][i])
             elif pop_source == 'homeostatic' or pop_source == 'HSD':
+                print("ICIIIIIIIIIIIIIIIIIII")
                 network.addNPConnection("HSD-NP","HSD",pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             else :
                 network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
@@ -79,7 +81,6 @@ def doStats():
 window = tk.Tk()
 window.title("SR sim")
 window.geometry()
-
 
 n = ttk.Notebook(window)   # Creation of tab system
 n.pack()
@@ -153,7 +154,7 @@ b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: Grap
 b = tk.Button(visuMenu, text="Visualize a mean graph from multiple results", command=lambda: createMeanGraphs(filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0,row=2)
 
 #--------------Statistics menu widgets-------------------
-  
+
 b = tk.Button(statMenu, text="Select results files", command=lambda: doStats(),width=25)
 b.grid(column=0, row=0)
 
