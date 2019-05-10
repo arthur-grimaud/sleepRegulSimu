@@ -14,8 +14,9 @@ library(ggplot2)
 
 # #Uncomment this section and modify it to fit your parameters
 # #Skip to "Counting time, bouts, bout duration" section
-# setwd(your_directory)
+# setwd("your_directory")
 # data1<-read.csv(file="results1.csv",header=T, dec=".",sep="\t")
+# step<-data1$time[[2]]-data1$time[[1]]
 # data1<-as.data.frame(data1$hypnogram) #hypno column
 # data2<-read.delim(file="results2.csv",header=T, dec=".", sep="\t")
 # data2<-as.data.frame(data2$hypnogram)
@@ -46,7 +47,7 @@ for(i in 1:(length(args))){
     temp<-read.csv(file=args[i],header=T, dec=".", sep="\t")
     tempHypno<-as.data.frame(temp$hypnogram)
     data<-append(data,tempHypno)
-    step<-temp[[1]][2]-temp[[1]][1] #to be used in conversion to minutes
+    step<-temp$time[[2]]-temp$time[[1]] #to be used in conversion to minutes
   }
 }
 
@@ -172,7 +173,7 @@ boutDurDF$NREM = as.numeric(boutDurDF$NREM)
 boutDurDF$REM = as.numeric(boutDurDF$REM)
 boutDurDF$wake = as.numeric(boutDurDF$wake)
 #convert dt (s) to minutes
-boutDurDF<-boutDurDF/60*step
+boutDurDF<-(boutDurDF/60)*step
 
 
 #--------Statistics--------#
@@ -252,24 +253,32 @@ names(boutDurSD)<-cbind("SD","mean","state")
 
 # %Time
 
-pp<-ggplot(data=totalsSD, aes(x=state, y=percent)) +
+pp<-ggplot(data=totalsSD, aes(x=state, y=percent, fill=state)) +
   geom_bar(stat="identity") +
   geom_errorbar(aes(ymin=percent-SD, ymax=percent+SD), width=.2,position=position_dodge(.9)) +
-  labs(x="", y="Percent time in each state")
+  labs(x="", y="Percent time in each state")+
+  scale_fill_manual(values=c('indianred3', 'steelblue4', 'forestgreen'))+
+  theme(legend.position = "none")
+
 
 # number of bouts
 
-pp2<-ggplot(data=boutsSD, aes(x=state, y=mean)) +
+pp2<-ggplot(data=boutsSD, aes(x=state, y=mean, fill=state)) +
   geom_bar(stat="identity")+
   geom_errorbar(aes(ymin=mean-SD, ymax=mean+SD), width=.2,position=position_dodge(.9)) +
-  labs(x="", y="Number of bouts")
+  labs(x="", y="Number of bouts")+
+  scale_fill_manual(values=c('indianred3', 'steelblue4', 'forestgreen'))+
+  theme(legend.position = "none")
+  
 
 # time in bout
 
-pp3<-ggplot(data=boutDurSD, aes(x=state, y=mean)) +
+pp3<-ggplot(data=boutDurSD, aes(x=state, y=mean, fill=state)) +
   geom_bar(stat="identity")+
   geom_errorbar(aes(ymin=mean-SD, ymax=mean+SD), width=.2,position=position_dodge(.9)) +
-  labs(x="", y="Mean bout duration (min)")
+  labs(x="", y="Mean bout duration (min)")+
+  scale_fill_manual(values=c('indianred3', 'steelblue4', 'forestgreen'))+
+  theme(legend.position = "none")
 
 
 #Save plots
