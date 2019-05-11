@@ -4,6 +4,7 @@
 // list pop_list contains the name of the source population from where comes the connections towards the current population (the one of the block) and list g_NT_pop_list givers the corresponding weights
 
 * population = wake
+promoting = WAKE
 F = 6.0
 F_max = 6.5
 alpha = 0.5
@@ -19,6 +20,7 @@ tau_NT = 25E3
 *
 
 * population = NREM
+promoting = NREM
 F = 1E-3
 F_max = 5.0
 alpha = 0.175
@@ -35,6 +37,7 @@ tau_NT = 10E3
 
 
 * population = REM
+promoting = REM
 F = 1E-3
 F_max = 5.0
 alpha = 0.13

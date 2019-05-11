@@ -34,6 +34,11 @@ class Network(NetworkGUI):
         self.t = 0
         self.resMethod = "Euler"
 
+        #Hypnogram Setup :
+
+        self.wakeThreshold = 0.4    #greater limit of wake promoting NT concentration for wich the model is considered in WAKE state.
+        self.REMThreshold = 0.4
+
         #RK4 coefficient
         self.A = [0.5, 0.5, 1.0, 1.0]
 
@@ -75,7 +80,6 @@ class Network(NetworkGUI):
                 print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
-            #print("------------------------------")
 
             if self.resMethod == "Euler":
                 self.nextStepEuler() # call next step
@@ -87,9 +91,7 @@ class Network(NetworkGUI):
             self.step += 1
             self.t = math.floor(self.step/self.res) # current time since simulation time in sc
 
-        # self.writeInFile("results.csv",self.results) # Write results in a file
-
-    def nextStepEuler(self): #call next step method in each compartments
+    def nextStepEuler(self): #call Euler next step method in each compartments
         for c in self.compartments .values():
             if isinstance(c,NeuronalPopulation):
                 noise = self.additiveWhiteGaussianNoise()
@@ -97,7 +99,7 @@ class Network(NetworkGUI):
             else:
                 c.setNextStepEuler(self.dt, 0)
 
-    def nextStepRK4(self):
+    def nextStepRK4(self): #call RK4 next step method in each compartments
         for N in range(4):
             for c in self.compartments.values():
                 c.setNextSubStepRK4(self.dt,N,self.A[N])
@@ -114,18 +116,31 @@ class Network(NetworkGUI):
         for i in self.injections:
             i.setNextStepRK4()
 
+        print("DeltaT:",self.dt)
+
 
     #-----------------------------Hypnogram--------------------------------------#
 
     def getHypno(self): #Return the current state of the model
-        # if self.compartments["wake"].C[0] < 0.4 :
-        #     if self.compartments["REM"].C[0] > 0.4 :
-        #         return 0.5
-        #     else :
-        #         return 0
-        # else :
-        #     return 1
-        return 1
+        WAKEpromoting = 0
+        RpNb = 0
+        REMpromoting = 0
+
+        for c in self.compartments.values():
+            if isinstance(c,NeuronalPopulation):
+                if c.promoting == "WAKE":
+                    WAKEpromoting += c.C[0]
+                if c.promoting == "REM":
+                    REMpromoting += c.C[0]
+
+
+        if WAKEpromoting < self.wakeThreshold :
+            if REMpromoting > self.REMThreshold :
+                return 0.5
+            else :
+                return 0
+        else :
+            return 1
 
     #-------------------------------Write----------------------------------------#
 
@@ -216,6 +231,7 @@ class NeuronalPopulation :
     # creation of the class NeuronalPopulation using the dictionnary "population"
     def __init__(self,myPopulation) :
         self.name = myPopulation["name"]
+        self.promoting = myPopulation["promoting"] #
 
         #List of 'Connection' objects
         self.connections = []
