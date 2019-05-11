@@ -144,8 +144,16 @@ class Network(NetworkGUI):
 
     #-------------------------------Write----------------------------------------#
 
+    def fileHeader(self) :
+        header = "### "
+        for (compartment,values) in self.compartments.items() :
+            if "neurotransmitter" in dir(values) :
+                header += str(compartment)+"--->"+str(values.neurotransmitter)+" "
+        header+="\n"
+        return header
+
     def writeInFile(self,filename,data):
-        # with open(filename, 'w') as f:
+        filename.write(self.fileHeader())
         writer = csv.writer(filename, delimiter='\t')
         writer.writerows(zip(*data))
         filename.close()

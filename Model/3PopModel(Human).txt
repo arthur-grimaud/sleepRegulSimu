@@ -2,6 +2,7 @@
 // lines beginning with an "@" corresponds to the instanciation of the last created population's concentration
 // variable g is the weight applied to the concentration of the corresponding population in variable pop_list
 // list pop_list contains the name of the source population from where comes the connections towards the current population (the one of the block) and list g_NT_pop_list givers the corresponding weights
+// variable promoting in the instanciation of a neuronal population corresponds to which state of sleep the corresponding neuronal population promotes
 
 * population = wake
 promoting = WAKE
@@ -13,7 +14,7 @@ tau_pop = 1500E3
 g_NT_pop_list = -1.68 1.0
 pop_list = NREM REM
 
-neurotransmitter = Noradrenaline
+neurotransmitter = noradrenaline
 C = 0.9
 gamma = 5.0
 tau_NT = 25E3
@@ -46,7 +47,7 @@ tau_pop = 60E3
 g_NT_pop_list = -4.0 -1.3 1.6
 pop_list = wake NREM REM
 
-neurotransmitter = Acetylcholin
+neurotransmitter = acetylcholin
 C = 1E-3
 gamma = 2.0
 tau_NT = 10E3

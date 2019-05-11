@@ -34,8 +34,6 @@ def loadModel():
     # for key in cycle.keys():
     #     network.addNP(conn[key])
 
-    print(conn)
-
     for pop_ext in conn.keys() :
         i = 0
         for pop_source in conn[pop_ext] :
@@ -139,7 +137,7 @@ b.grid(row=2)
 
 #--------------Visualization menu widgets-------------------
 
-b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results),width=75).grid(column=0, row=0)
+b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results,network.fileHeader()),width=75).grid(column=0, row=0)
 b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: GraphFromCSV(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0, row=1)
 b = tk.Button(visuMenu, text="Visualize a mean graph from multiple results", command=lambda: createMeanGraphs(filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0,row=2)
 

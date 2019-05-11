@@ -7,7 +7,7 @@ F_max = 6.5
 beta = 2
 alpha = 0.75
 tau_pop = 25E3
-neurotransmitter = Noradrenaline
+neurotransmitter = noradrenaline
 gamma = 5.0
 tau_NT = 25.0
 *
@@ -21,7 +21,7 @@ F_max = 6.5
 beta = 2
 alpha = 0.75E3
 tau_pop = 25.0
-neurotransmitter = Serotonin
+neurotransmitter = serotonin
 gamma = 5.0
 tau_NT = 25.0
 *
@@ -49,7 +49,7 @@ F_max = 5.0
 beta = -0.2
 alpha = 0.25
 tau_pop = 10E3
-neurotransmitter = Acetylcholin
+neurotransmitter = acetylcholin
 gamma = 3.0
 tau_NT = 10.0
 *
@@ -63,7 +63,7 @@ F_max = 5.0
 beta = -0.5
 alpha = 0.25
 tau_pop = 1E3
-neurotransmitter = Acetylcholin
+neurotransmitter = acetylcholin
 gamma = 3.0
 tau_NT = 10.0
 *

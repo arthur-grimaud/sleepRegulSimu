@@ -168,7 +168,6 @@ class NetworkGUI:
 
         frame = Frame(window)
 
-<<<<<<< HEAD
         resMethod = StringVar()
         optMethod = ["Euler", "RK4"]
 
@@ -184,9 +183,8 @@ class NetworkGUI:
 
 
         lbl = Label(frame, text="T").grid(column=0, row=1)
-=======
         lbl = Label(frame, text="T (s)").grid(column=0, row=1)
->>>>>>> b96e353f0014551dcec6dac2e052e1aa6581f18c
+
         e = Entry(frame, textvariable=T)
         e.insert(END, self.T)
         e.grid(column=1, row=1)
