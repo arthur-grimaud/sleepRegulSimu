@@ -32,6 +32,7 @@ class Network(NetworkGUI):
         self.dt = None # Time step in milliseconds
         self.saveRate = 100 #Save rate in number of steps
         self.t = 0
+        self.onset = 10
         self.resMethod = "Euler"
 
         #Hypnogram Setup :
@@ -76,7 +77,7 @@ class Network(NetworkGUI):
 
         while (self.step < self.T*self.res): # Main loop
 
-            if self.step%self.saveRate == 0: #Each x steps
+            if self.step%self.saveRate == 0 and self.step >= self.onset*self.res : #Each x steps
                 print(math.floor((100*self.step)/(self.T*self.res)),"%")
                 self.getAndSaveRecorders() # variable storage
 
@@ -284,7 +285,7 @@ class NeuronalPopulation :
 
     def setNextStepEuler(self,dt,N, noise):
 
-        self.F[0]  = self.F[0] + dt * self.getFR(N)
+        self.F[0]  = self.F[0] + dt * self.getFR(N) + noise
         self.C[0] = self.C[0] + dt * self.getCEuler()
         #print(self.name, " F ", self.F[0])
         #print(self.name, " C ", self.C[0])
