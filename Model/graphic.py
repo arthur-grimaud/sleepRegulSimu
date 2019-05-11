@@ -112,7 +112,7 @@ def transformData(data,option) :
 
 ### Create the graph ###
 
-def createGraph(data,option=0):
+def createGraph(data,neurotransmitters,option=0):
 
     to_display = whatToDisplay()
 
@@ -132,7 +132,7 @@ def createGraph(data,option=0):
 
     listColors = ["cloudy blue", "dust", "warm purple", "lime green", "pink", "lilac", "dark pink","cyan","indigo","forest green","orange","olive green", "brick red", "sea blue", "cream", "scarlet", "raspberry", "greenish blue"]
     for population in data['firing rates'].keys() :
-        if population not in ["wake", "NREM", "REM"] :
+        if population not in colors.keys() :
             colors[population] = "xkcd:"+random.choice(listColors)
 
     step_hour = 5
@@ -175,7 +175,7 @@ def createGraph(data,option=0):
         sub2=plt.subplot(3,1,2)
         if 'C' in to_display :
             for (c,values) in data["concentrations"].items() :
-                sub2=plt.plot(data['time'], values, color=colors[c], label=c)
+                sub2=plt.plot(data['time'], values, color=colors[c], label=neurotransmitters[c])
         if 'homeo' in to_display :
             sub2=plt.plot(data['time'],data['homeostatic'],color=colors['homeostatic'],label="homeostatic")
         xticks(time_ms,time_h)
@@ -211,11 +211,33 @@ def createGraph(data,option=0):
     plt.show()
 
 
+### Get the neurotransmitters for each neuronal population from header
+
+def getNeurotransmitters(header) :
+    neurotransmitters = {}
+    for element in header : 
+        if element[0] != "#" :
+            element = element.split("--->")
+            neurotransmitters[element[0]] = element[1]
+    return neurotransmitters
+
+
 ### Read from a CVS file ###
 
 def readCSV(file) :
+    check_header = 0
     tmp = open(file,'r')
-    names=tmp.readline().rsplit()
+    line = tmp.readline().rsplit()
+    if line[0][0] == "#" :
+        check_header = 1
+        header = line
+        names = tmp.readline().rsplit()
+    else : 
+        names = line
+        header = "### "
+        for name in names :
+            header+=name[:-2]+"--->"+name[:-2]+" "
+        header = header.rsplit()
     tmp.close()
 
     results={}
@@ -223,24 +245,29 @@ def readCSV(file) :
         results[n]=[]
 
     with open(file) as f:
+        if check_header == 1 :
+            f.readline()
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader :
             for (name,element) in row.items() :
                 results[name].append(float(element))
-    return results
+    return results, header
 
 def GraphFromCSV(file) :
-    data = readCSV(file)
-    createGraph(data)
+    data, header = readCSV(file)
+    neurotransmitters = getNeurotransmitters(header)
+    createGraph(data, neurotransmitters)
 
 
 ### Read from the simulation ###
 
-def GraphFromSim(sim):
+def GraphFromSim(sim,header):
     data = {}
     for var in sim :
         data[var[0]] = var[1:]
-    createGraph(data)
+    header = header.rsplit()
+    neurotransmitters = getNeurotransmitters(header)
+    createGraph(data, neurotransmitters)
 
 
 #########################################################################################################
@@ -250,7 +277,10 @@ def GraphFromSim(sim):
 def createMeanGraphs(files) :
     results = []
     for file in files :
-        results.append(readCSV(file))
+        data, header = readCSV(file)
+        results.append(data)
+    
+    neurotransmitters = getNeurotransmitters(header)
 
     ### user chooses whether to use show standard deviation or no
     window_stdev = tk.Tk()
@@ -313,11 +343,11 @@ def createMeanGraphs(files) :
             mean_data['hypnogram'].append(1)
 
     if option.get() == 'std' :
-        createGraph(mean_data,'stdev')
+        createGraph(mean_data, neurotransmitters,'stdev')
     elif option.get() == 'sem' :
-        createGraph(mean_data,'sem')
+        createGraph(mean_data, neurotransmitters,'sem')
     else :
-        createGraph(mean_data)
+        createGraph(mean_data, neurotransmitters)
 
 # files = {
 #     'time' : [0,1,2,3,4,5,6,7,8,9],
