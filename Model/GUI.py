@@ -236,7 +236,7 @@ class NetworkGUI:
         e = Entry(frame, textvariable=thresholdWake)
         e.insert(END, self.wakeThreshold)
         e.grid(column=1, row=6)
-        
+
 
         def callbackThresholdREM(std):
             self.REMThreshold = float(std.get())
@@ -308,7 +308,7 @@ class NetworkGUI:
             lbl = Label(frame, text="tau_pop").grid(column=0, row=6)
             ety = Entry(frame, width=10).grid(column=1, row=6)
 
-            lbl = Label(frame, text="neurotransmitter").grid(column=0, row=7)
+            lbl = Label(frame, text="concentration").grid(column=0, row=7)
             ety = Entry(frame, width=10).grid(column=1, row=7)
 
             lbl = Label(frame, text="gamma").grid(column=0, row=8)
@@ -413,18 +413,23 @@ class NetworkGUI:
 
         connAvailable = []
         connAvailableStr = []
-        conn = StringVar()
+        connStr = StringVar()
         injType = StringVar()
 
         optType = ["Agonist", "Antagonist"]
 
         def changeConn(new):
-            conn = connAvailable[connAvailableStr.index(new)]
-            print(conn)
+
+            connStr = new
+            print(connStr, "type", type(connStr))
 
         def changeInjType(new):
             injType = new
             print(injType)
+
+        def getConnObject(name):
+            print("return:::", connAvailable[connAvailableStr.index(name)], "type", type(connAvailable[connAvailableStr.index(name)]))
+            return connAvailable[connAvailableStr.index(name)]
 
 
         for c in self.compartments.values():
@@ -435,7 +440,7 @@ class NetworkGUI:
 
 
         lbl = Label(window, text="Select Injection").grid(column=0, row=0)
-        optMenu = OptionMenu(window, conn, *connAvailableStr, command=changeConn).grid(column=1, row=0)
+        optMenu = OptionMenu(window, connStr, *connAvailableStr, command=changeConn).grid(column=1, row=0)
 
         lbl = Label(window, text="P0").grid(column=0, row=1)
         e1 = Entry(window)
@@ -461,7 +466,7 @@ class NetworkGUI:
         print(e3.get())
         print(e4.get())
 
-        b = Button(window, text="Create", command=lambda: self.addInjection(conn.get(), e1.get(), e2.get(), e3.get(), e4.get(), injType.get() ),width=25).grid(column=0, row=6)
+        b = Button(window, text="Create", command=lambda: self.addInjection(getConnObject(connStr.get()), e1.get(), e2.get(), e3.get(), e4.get(), injType.get() ),width=25).grid(column=0, row=6)
 
         window.mainloop()
 
