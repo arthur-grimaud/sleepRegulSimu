@@ -43,7 +43,7 @@ def whatToDisplay() :
 
     choice_hypno = tk.IntVar(window)
     button_hypno = tk.Checkbutton(window, text="Hypnogram", variable=choice_hypno)
-    button_hypno.grid(row=3,column=0)
+    button_hypno.gsrid(row=3,column=0)
     button_hypno.select()
 
     tk.Button(window,text="Done",command=window.quit).grid(column=0,row=4)
@@ -209,7 +209,7 @@ def createGraph(data,neurotransmitters,option=0):
                     sub2=plt.plot(data['time'], values, color=colors[c], linewidth=0.25)
                     sub2=plt.fill_between(data['time'],values,data['concentrations'][c],color=colors[c],alpha=0.25)
 
-        plt.ylabel("Concentrations")
+        plt.ylabel("Concentrations (aU)")
         plt.legend(loc='best')
 
 
