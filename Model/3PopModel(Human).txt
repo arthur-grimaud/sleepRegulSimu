@@ -12,7 +12,7 @@ tau_pop = 1500E3
 g_NT_pop_list = -1.68 1.0
 pop_list = NREM REM
 
-concentration = E
+concentration = Noradrenaline
 C = 0.9
 gamma = 5.0
 tau_NT = 25E3
@@ -27,7 +27,7 @@ tau_pop = 600E3
 g_NT_pop_list = -2.0 -1.5
 pop_list = wake homeostatic
 
-concentration = G
+concentration = GABA
 C = 1E-3
 gamma = 4.0
 tau_NT = 10E3
@@ -43,7 +43,7 @@ tau_pop = 60E3
 g_NT_pop_list = -4.0 -1.3 1.6
 pop_list = wake NREM REM
 
-concentration = A
+concentration = Acetylcholin
 C = 1E-3
 gamma = 2.0
 tau_NT = 10E3
