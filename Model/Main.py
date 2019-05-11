@@ -19,7 +19,6 @@ network = Network()
 def loadModel():
     global network
 
-
     pop,cycle,sim,conn=read_parameters(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("text files","*.txt"),("all files","*.*"))))
     network = Network(sim)
 
@@ -140,6 +139,7 @@ b.grid(row=2)
 b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results,network.fileHeader()),width=75).grid(column=0, row=0)
 b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: GraphFromCSV(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0, row=1)
 b = tk.Button(visuMenu, text="Visualize a mean graph from multiple results", command=lambda: createMeanGraphs(filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0,row=2)
+b = tk.Button(visuMenu, text="Compare with a control", command=lambda: compareWithControl(),width=75).grid(column=0,row=3)
 
 #--------------Statistics menu widgets-------------------
 
