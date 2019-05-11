@@ -24,6 +24,14 @@ class NetworkGUI:
         for comp in self.compartments.values():
             i += 1
             self.getCompartmentFrame(comp,objFrame).grid(column=i, row=0)
+
+
+
+
+
+
+
+
         return objFrame
 
     def getCompartmentFrame(self, comp, frame):
@@ -95,6 +103,13 @@ class NetworkGUI:
 
 
             elif attr == "name":
+                i += 1
+                lbl = Label(compFrame, text=attr)
+                lbl.grid(column=0, row=i)
+                txt = Entry(compFrame, width=10)
+                txt.insert(END, value)
+                txt.grid(column=1, row=i)
+            elif attr == "promoting":
                 i += 1
                 lbl = Label(compFrame, text=attr)
                 lbl.grid(column=0, row=i)
@@ -184,7 +199,6 @@ class NetworkGUI:
 
         lbl = Label(frame, text="T").grid(column=0, row=1)
         lbl = Label(frame, text="T (s)").grid(column=0, row=1)
-
         e = Entry(frame, textvariable=T)
         e.insert(END, self.T)
         e.grid(column=1, row=1)
@@ -208,6 +222,34 @@ class NetworkGUI:
         e = Entry(frame, textvariable=std)
         e.insert(END, self.std)
         e.grid(column=1, row=5)
+
+
+        def callbackThresholdWake(std):
+            self.wakeThreshold = float(std.get())
+            print (std.get())
+
+        thresholdWake = StringVar()
+        thresholdWake.trace("w", lambda name, index, mode, thresholdWake=thresholdWake: callbackThresholdWake(thresholdWake))
+
+        lbl = Label(frame, text="threshold Wake").grid(column=0, row=6)
+
+        e = Entry(frame, textvariable=thresholdWake)
+        e.insert(END, self.wakeThreshold)
+        e.grid(column=1, row=6)
+        
+
+        def callbackThresholdREM(std):
+            self.REMThreshold = float(std.get())
+            print (std.get())
+
+        thresholdREM = StringVar()
+        thresholdREM.trace("w", lambda name, index, mode, thresholdREM=thresholdREM: callbackThresholdREM(thresholdREM))
+
+        lbl = Label(frame, text="threshold REM").grid(column=0, row=7)
+
+        e = Entry(frame, textvariable=thresholdREM)
+        e.insert(END, self.REMThreshold)
+        e.grid(column=1, row=7)
 
         return frame
 
