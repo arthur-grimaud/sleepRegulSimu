@@ -247,7 +247,7 @@ class NeuronalPopulation :
         self.tau_pop = float(myPopulation["tau_pop"])
 
         #Neurotransmitter Concentration parameters (Constants used in the Neurotransmitter concentration equation)
-        self.concentration = myPopulation["concentration"]
+        self.neurotransmitter = myPopulation["neurotransmitter"]
         self.gamma = float(myPopulation["gamma"])
         self.tau_NT = float(myPopulation["tau_NT"])
 
