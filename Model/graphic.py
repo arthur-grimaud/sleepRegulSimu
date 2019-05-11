@@ -8,6 +8,8 @@ if sys_pf == 'darwin':
     matplotlib.use("TkAgg")
 
 import tkinter as tk
+from tkinter import filedialog
+
 import matplotlib.pyplot as plt
 from pylab import xticks
 from pylab import yticks
@@ -15,6 +17,7 @@ import csv
 import numpy
 import random
 import math
+import os
 
 
 ### Choose what to display ###
@@ -46,6 +49,7 @@ def whatToDisplay() :
     tk.Button(window,text="Done",command=window.quit).grid(column=0,row=4)
 
     window.mainloop()
+    window.destroy()
 
     to_display = []
     if choice_F.get() == 1 :
@@ -114,7 +118,18 @@ def transformData(data,option) :
 
 def createGraph(data,neurotransmitters,option=0):
 
-    to_display = whatToDisplay()
+    if option == "control" : 
+        to_display = ["F","C","homeo","hypno"]
+    else :
+        to_display = whatToDisplay()
+
+    ### defines the line style
+    if option == "control" :
+        line = '--'
+        transparency = 0.25
+    else :
+        line = '-'
+        transparency = 1
 
     ### defines the corresponding colors for the 3 populations model
     colors = {
@@ -149,7 +164,7 @@ def createGraph(data,neurotransmitters,option=0):
     if 'F' in to_display :
         sub1=plt.subplot(3,1,1)
         for (fr,values) in data["firing rates"].items() :
-            sub1=plt.plot(data['time'], values, colors[fr], label=fr)
+            sub1=plt.plot(data['time'], values, colors[fr], ls=line, alpha=transparency, label=fr)
 
         # show the standard deviation on the mean graphs
         if option == 'stdev' :
@@ -175,9 +190,9 @@ def createGraph(data,neurotransmitters,option=0):
         sub2=plt.subplot(3,1,2)
         if 'C' in to_display :
             for (c,values) in data["concentrations"].items() :
-                sub2=plt.plot(data['time'], values, color=colors[c], label=neurotransmitters[c])
+                sub2=plt.plot(data['time'], values, color=colors[c], ls=line, alpha=transparency, label=neurotransmitters[c])
         if 'homeo' in to_display :
-            sub2=plt.plot(data['time'],data['homeostatic'],color=colors['homeostatic'],label="homeostatic")
+            sub2=plt.plot(data['time'],data['homeostatic'],color=colors['homeostatic'], ls=line, alpha=transparency, label="homeostatic")
         xticks(time_ms,time_h)
 
         # show the standard deviation on the mean graphs
@@ -201,14 +216,15 @@ def createGraph(data,neurotransmitters,option=0):
     ### subplot 3 - hypnogram
     if 'hypno' in to_display :
         sub3=plt.subplot(3,1,3)
-        plt.plot(data['time'],data['hypnogram'], colors['hypnogram'])
+        plt.plot(data['time'],data['hypnogram'], colors['hypnogram'], ls=line, alpha=transparency)
         plt.ylim(-0.5,1.5)
         xticks(time_ms,time_h)
         yticks([0,0.5,1],['NREM','REM','Wake'])
         plt.xlabel('Time (h)')
         plt.ylabel('Hypnogram')
 
-    plt.show()
+    if option != "control" :
+        plt.show()
 
 
 ### Get the neurotransmitters for each neuronal population from header
@@ -274,7 +290,7 @@ def GraphFromSim(sim,header):
 
 ### create mean graphs ###
 
-def createMeanGraphs(files) :
+def createMeanGraphs(files,option=0) :
     results = []
     for file in files :
         data, header = readCSV(file)
@@ -282,15 +298,20 @@ def createMeanGraphs(files) :
     
     neurotransmitters = getNeurotransmitters(header)
 
-    ### user chooses whether to use show standard deviation or no
-    window_stdev = tk.Tk()
-    window_stdev.title("Display :")
-    option = tk.StringVar(window_stdev)
-    tk.Radiobutton(window_stdev,  text="Display the standard deviation", value="std", variable=option,width=45).pack()
-    tk.Radiobutton(window_stdev,  text="Display the standard error of the mean", value="sem", variable=option,width=45).pack()
-    tk.Radiobutton(window_stdev,  text="Nothing", value="no", variable=option,width=45).pack()
-    tk.Button(window_stdev,text="Done",command=window_stdev.quit).pack()
-    window_stdev.mainloop()
+    if option == "compare_to_control" or option == "control" :
+        check_stdev = tk.StringVar()
+        check_stdev.set(0)
+    else :
+        ### user chooses whether to use show standard deviation or no
+        window_stdev = tk.Tk()
+        window_stdev.title("Display :")
+        check_stdev = tk.StringVar(window_stdev)
+        tk.Radiobutton(window_stdev,  text="Display the standard deviation", value="std", variable=check_stdev,width=45).pack()
+        tk.Radiobutton(window_stdev,  text="Display the standard error of the mean", value="sem", variable=check_stdev,width=45).pack()
+        tk.Radiobutton(window_stdev,  text="Nothing", value="no", variable=check_stdev,width=45).pack()
+        tk.Button(window_stdev,text="Done",command=window_stdev.quit).pack()
+        window_stdev.mainloop()
+        window_stdev.destroy()
 
     mean_data = {}
     stat = {}
@@ -312,7 +333,7 @@ def createMeanGraphs(files) :
             tmp /= len(l)
             mean_data[element].append(tmp)
 
-    if option.get() == 'std' :
+    if check_stdev.get() == 'std' :
         for (variable,values) in stat.items() :
             if variable != 'homeostatic' :
                 mean_data[variable+'_stdev_min'] = []
@@ -322,7 +343,7 @@ def createMeanGraphs(files) :
                     mean_data[variable+'_stdev_min'].append(mean_data[variable][k]-stdev)
                     mean_data[variable+'_stdev_max'].append(mean_data[variable][k]+stdev)
 
-    elif option.get() == 'sem' :
+    elif check_stdev.get() == 'sem' :
         for (variable,values) in stat.items() :
             if variable != 'homeostatic' :
                 mean_data[variable+'_sem_min'] = []
@@ -342,12 +363,59 @@ def createMeanGraphs(files) :
         else :
             mean_data['hypnogram'].append(1)
 
-    if option.get() == 'std' :
+    if check_stdev.get() == 'std' :
         createGraph(mean_data, neurotransmitters,'stdev')
-    elif option.get() == 'sem' :
+    elif check_stdev.get() == 'sem' :
         createGraph(mean_data, neurotransmitters,'sem')
+    elif option == "control" :
+        createGraph(mean_data,neurotransmitters,option)
     else :
         createGraph(mean_data, neurotransmitters)
+
+
+#########################################################################################################
+
+### Compare graph obtained with lesion with control
+
+def compareWithControl() :
+
+    ### choose what you want to use as control
+    window_control = tk.Tk()
+    window_control.title("Use as control :")
+    check_control = tk.StringVar(window_control)
+    tk.Radiobutton(window_control,  text="One result", value="one", variable=check_control,width=45).pack()
+    tk.Radiobutton(window_control,  text="The mean of multiple results", value="mult", variable=check_control,width=45).pack()
+    tk.Button(window_control,text="Done",command=window_control.quit).pack()
+    window_control.mainloop()
+    window_control.destroy()
+
+    if check_control.get() == "one" :
+        fileControl = filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select control",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        control, header = readCSV(fileControl)
+        neurotransmitters = getNeurotransmitters(header)
+        createGraph(control,neurotransmitters,'control')
+    elif check_control.get() == "mult" :
+        filesControl = filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select control files", filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        createMeanGraphs(filesControl,"control")
+
+
+    ### choose what you want to compare
+    window_compare = tk.Tk()
+    window_compare.title("Compare to control :")
+    check_compare = tk.StringVar(window_compare)
+    tk.Radiobutton(window_compare,  text="One result", value="one", variable=check_compare,width=45).pack()
+    tk.Radiobutton(window_compare,  text="The mean of multiple results", value="mult", variable=check_compare,width=45).pack()
+    tk.Button(window_compare,text="Done",command=window_compare.quit).pack()
+    window_compare.mainloop()
+    window_compare.destroy()
+
+    if check_compare.get() == "one" :
+        file = filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        GraphFromCSV(file)
+    elif check_compare.get() == 'mult' :
+        files = filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))
+        createMeanGraphs(files,"compare_to_control")
+
 
 # files = {
 #     'time' : [0,1,2,3,4,5,6,7,8,9],
