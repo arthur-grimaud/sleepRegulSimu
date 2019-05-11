@@ -266,7 +266,7 @@ class NetworkGUI:
             lbl = Label(frame, text="tau_pop").grid(column=0, row=6)
             ety = Entry(frame, width=10).grid(column=1, row=6)
 
-            lbl = Label(frame, text="concentration").grid(column=0, row=7)
+            lbl = Label(frame, text="neurotransmitter").grid(column=0, row=7)
             ety = Entry(frame, width=10).grid(column=1, row=7)
 
             lbl = Label(frame, text="gamma").grid(column=0, row=8)
@@ -388,7 +388,7 @@ class NetworkGUI:
         for c in self.compartments.values():
             for i in c.connections:
                 if i.type == "NP-NP":
-                    connAvailableStr.append("Injection of: "+str(i.source.concentration)+" in "+str(i.target.name))
+                    connAvailableStr.append("Injection of: "+str(i.source.neurotransmitter)+" in "+str(i.target.name))
                     connAvailable.append(i)
 
 
