@@ -209,7 +209,7 @@ def createGraph(data,neurotransmitters,option=0):
                     sub2=plt.plot(data['time'], values, color=colors[c], linewidth=0.25)
                     sub2=plt.fill_between(data['time'],values,data['concentrations'][c],color=colors[c],alpha=0.25)
 
-        plt.ylabel("Concentrations")
+        plt.ylabel("Concentrations (aU)")
         plt.legend(loc='best')
 
 
