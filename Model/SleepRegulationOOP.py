@@ -12,7 +12,7 @@ from GUI import NetworkGUI
 import csv
 
 ########################NETWORK############################
-#This class is used to manage the simulation    ....      #
+#This class is used to manage the simulation              #
 ###########################################################
 
 class Network(NetworkGUI):
@@ -30,15 +30,15 @@ class Network(NetworkGUI):
         self.T = None # Simulation time in seconds
         self.res = None # Iterations per seconds
         self.dt = None # Time step in milliseconds
-        self.saveRate = 100 #Save rate in number of steps
-        self.t = 0
-        self.onset = 10
-        self.resMethod = "Euler"
+        self.saveRate = 100 # Save rate in number of steps
+        self.t = 0 # Current time of the model
+        self.onset = 10 # Time until data is stored in seconds
+        self.resMethod = "Euler" #Differential equation resolution method
 
         #Hypnogram Setup :
 
-        self.wakeThreshold = 0.4    #greater limit of wake promoting NT concentration for wich the model is considered in WAKE state.
-        self.REMThreshold = 0.4
+        self.wakeThreshold = 0.4  # Greater limit of wake promoting NT concentration for wich the model is considered in WAKE state.
+        self.REMThreshold = 0.4 # Lower limit of REM promoting NT concentration for wich the model is considered in REM state.
 
         #RK4 coefficient
         self.A = [0.5, 0.5, 1.0, 1.0]
@@ -78,12 +78,12 @@ class Network(NetworkGUI):
         while (self.step < self.T*self.res): # Main loop
 
             if self.step%self.saveRate == 0 and self.step >= self.onset*self.res : #Each x steps
-                print(math.floor((100*self.step)/(self.T*self.res)),"%")
+                print(math.floor((100*self.step)/(self.T*self.res)),"%")# Print simulation progress
                 self.getAndSaveRecorders() # variable storage
 
-
+            #Equation resolution
             if self.resMethod == "Euler":
-                self.nextStepEuler() # call next step
+                self.nextStepEuler()
             elif self.resMethod == "RK4":
                 self.nextStepRK4()
             else:
@@ -91,6 +91,7 @@ class Network(NetworkGUI):
 
             self.step += 1
             self.t = math.floor(self.step/self.res) # current time since simulation time in sc
+
 
     def nextStepEuler(self): #call Euler next step method in each compartments
         for c in self.compartments .values():
@@ -117,7 +118,6 @@ class Network(NetworkGUI):
         for i in self.injections:
             i.setNextStepRK4()
 
-        print("DeltaT:",self.dt)
 
 
     #-----------------------------Hypnogram--------------------------------------#
@@ -143,7 +143,7 @@ class Network(NetworkGUI):
         else :
             return 1
 
-    #-------------------------------Write----------------------------------------#
+    #-------------------------------Write results in file----------------------------------------#
 
     def fileHeader(self) :
         header = "### "
@@ -229,7 +229,7 @@ class Network(NetworkGUI):
 
 
 ########################NeuronalPopulation ############################
-#Class representing a neuronal population    ....                  #
+#Class representing a neuronal population                             #
 #######################################################################
 
 
@@ -243,7 +243,7 @@ class NeuronalPopulation :
         self.promoting = myPopulation["promoting"] #
 
         #List of 'Connection' objects
-        self.connections = []
+
 
         #initial conditions (Variables)
         self.F = [float(myPopulation["F"]),0,0,0,0]
@@ -259,7 +259,7 @@ class NeuronalPopulation :
         self.neurotransmitter = myPopulation["neurotransmitter"]
         self.gamma = float(myPopulation["gamma"])
         self.tau_NT = float(myPopulation["tau_NT"])
-
+        self.connections = []
         #Equation for RK4
 
         # self.dF = RK4(lambda t, y: t*getFR(y))
@@ -270,13 +270,10 @@ class NeuronalPopulation :
     #-----------------------------------??------------------------------------#
 
     def setNextSubStepRK4(self,dt,N,coef):
-
         self.F[N+1] = self.F[0] + coef * dt * self.getFR(N)
         self.C[N+1] = self.C[0] + coef * dt * self.getC(N)
 
     def setNextStepRK4(self, noise):
-        #print(self.name, " F ", self.F[0])
-        #print(self.name, " C ", self.C[0])
         self.F[0] = ((-3*self.F[0] + 2*self.F[1] + 4*self.F[2] + 2*self.F[3] + self.F[4])/6) + noise
         self.C[0] = (-3*self.C[0] + 2*self.C[1] + 4*self.C[2] + 2*self.C[3] + self.C[4])/6
 
@@ -284,18 +281,12 @@ class NeuronalPopulation :
             self.F[0] = 0
 
     def setNextStepEuler(self,dt,N, noise):
-
         self.F[0]  = self.F[0] + dt * self.getFR(N) + noise
         self.C[0] = self.C[0] + dt * self.getCEuler()
-        #print(self.name, " F ", self.F[0])
-        #print(self.name, " C ", self.C[0])
-        #print("DT", dt )
 
     #---------------------------------Equations------------------------------------#
 
     def getFR(self,N): #Equation of the firing rate
-        #print("((",self.F_max, "*(0.5*(1 + np.tanh((", self.getI(N)," +", self.getBeta(N),")/",self.alpha,")))) - ",self.F[N], " )/",self.tau_pop)
-        #print("(self.getI(N) - self.getBeta(N))",((self.F_max *(0.5*(1 + np.tanh((self.getI(N) - self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop)
         return ((self.F_max *(0.5*(1 + np.tanh((self.getI(N) - self.getBeta(N))/self.alpha)))) - self.F[N]  )/self.tau_pop
 
     def getI(self,N): #Get I from the connection in self.connections
@@ -304,7 +295,6 @@ class NeuronalPopulation :
             if c.type == "NP-NP":
                 result += c.getConnectVal(N)
 
-        #print(self.name, " i ", result)
         return result
 
     def getC(self,N): #equation of the neurotransmitter concentration released by the population
@@ -359,8 +349,8 @@ class NeuronalPopulation :
 
 
 ########################HOMEOSTATICSLEEPDRIVE############################
-#   ....                  #
-#######################################################################
+#   .                                                                   #
+#########################################################################
 
 class HomeostaticSleepDrive:
     # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
@@ -377,8 +367,6 @@ class HomeostaticSleepDrive:
         self.theta = float(myCycle["theta"])
 
         self.connections = []
-
-        # self.dh = RK4(lambda t, y: t*getH(y))
 
         print('HomeostaticSleepDrive object: ', self.name, ' created')
 
@@ -397,8 +385,7 @@ class HomeostaticSleepDrive:
 
     #---------------------------------Equations------------------------------------#
 
-    def getH(self,N):
-        #print(self.theta-self.getSourceFR())
+    def getH(self,N): # Homeostatic Sleep Drive value equation
         return float((self.H_max-self.h[N])/self.tau_hw * self.heaviside(self.getSourceFR(N)-self.theta) - self.h[N]/self.tau_hs*self.heaviside(self.theta-self.getSourceFR(N)))
 
     def getSourceFR(self,N):
@@ -451,11 +438,10 @@ class HomeostaticSleepDrive:
 
 
 #############################CONNECTION################################
-#   ....                                                              #
+#                                                                     #
 #######################################################################
 
-class Connection:
-    # creation of the connections class, which manages the connections between the different populations (manages the concentrations and associated weights)
+class Connection: # creation of the connections class, which manages the connections between the different populations (manages the concentrations and associated weights)
 
     def __init__(self, type, source, target, weight) :
         self.type = type # String describing the type of connection. Depends on the type of compartments connected
@@ -493,8 +479,8 @@ class Connection:
 
 
 
-#############################Injection################################
-#   ....                                                              #
+#############################Injection#################################
+#                                                                     #
 #######################################################################
 
 
@@ -502,9 +488,9 @@ class Injection:
 
     def __init__(self, P, tauPi, iMin, iMax) :
         self.P = [P,0,0,0,0]
-        self.tauPi = tauPi
-        self.iMin = iMin
-        self.imax = iMax
+        self.tauPi = tauPi #Au
+        self.iMin = iMin #Au
+        self.imax = iMax #Au
 
 
     def getP(self,N):
