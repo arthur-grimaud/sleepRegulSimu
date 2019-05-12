@@ -137,7 +137,7 @@ def getNeurotransmitters(header) :
 
 
 ###################################################
-###### CREATING THE DIFFERENT TYPES OF GRAPH ######
+###### CREATING THE DIFFERENT TYPES OF GRAPHS #####
 ###################################################
 
 def createGraph(data,neurotransmitters,option=0):
@@ -178,7 +178,7 @@ def createGraph(data,neurotransmitters,option=0):
         if population not in colors.keys() :
             colors[population] = "xkcd:"+random.choice(listColors)
     
-    ### translate the time initially in ms in hours
+    ### translate the time initially in ms to hours
     step_hour = 5
     time_ms = []
     time_h = []
