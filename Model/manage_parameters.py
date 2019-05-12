@@ -2,7 +2,7 @@
 #-*-coding:utf-8-*-
 
 def read_parameters(file) :
-    ### reads the file parameters.txt and extract parameters from it
+    ### reads the file parameters.txt and extracts parameters from it
     # returns a list of dictionnaries of dictionnaries : [populations,concentrations,cycles,time]
 
     fic = open(file,"r")
@@ -15,9 +15,9 @@ def read_parameters(file) :
     connections = {}
 
     # when the check is equal to 1, you're currently in the corresponding block (a popultion block, a concentration block, etc)
-    check_pop = 0   # check wether you're currently in a population block
-    check_cycle = 0   # check wether you're currently in a cycle block
-    check_sim = 0   # check wether you're currently in a simulation definion block
+    check_pop = 0   # check whether you're currently in a population block
+    check_cycle = 0   # check whether you're currently in a cycle block
+    check_sim = 0   # check whether you're currently in a simulation definition block
 
     for lines in content :
         line = lines.split(" ")

@@ -1,7 +1,7 @@
-// lines beginning with an "*" corresponds to the instanciation of a neuronal population
-// lines beginning with an "@" corresponds to the instanciation of the last created population's concentration
+// lines beginning with a "*" correspond to the instanciation of a neuronal population
+// lines beginning with a "@" correspond to the instanciation of the last created population's concentration
 // variable g is the weight applied to the concentration of the corresponding population in variable pop_list
-// list pop_list contains the name of the source population from where comes the connections towards the current population (the one of the block) and list g_NT_pop_list givers the corresponding weights
+// list pop_list contains the name of the source population from where the connections towards the current population come from (the one of the block) and list g_NT_pop_list gives the corresponding weights
 // variable promoting in the instanciation of a neuronal population corresponds to which state of sleep the corresponding neuronal population promotes
 
 * population = wake
@@ -53,7 +53,7 @@ gamma = 2.0
 tau_NT = 10E3
 *
 
-// lines beginning with an "+" corresponds to the instanciation of a cycle
+// lines beginning with a "+" correspond to the instanciation of a cycle
 
 + cycle = homeostatic
 h = 0.5
@@ -65,7 +65,7 @@ g_NT_pop_list = 0.0
 theta = 2
 +
 
-// lines beginning with an "#" corresponds to the simulation parameters
+// lines beginning with a "#" corresponds to the simulation parameters
 // during 24h (86400s)
 
 #

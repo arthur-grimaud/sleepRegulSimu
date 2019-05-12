@@ -20,11 +20,13 @@ import os
 network = Network()
 
 def loadModel():
+    ### initiates the network using the 4 dictionnaries returned by read_parameters() (imported from manage_parameters)
+    # creates the object Network and its compartments (objects NeuronalPopulation, Connection and HomeostaticSleepDrive
     global network
 
 
     pop,cycle,sim,conn=read_parameters(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("text files","*.txt"),("all files","*.*"))))
-    network = Network(sim)
+    network = Network(sim)   
 
     for key in pop.keys():
         network.addNP(pop[key])
@@ -45,8 +47,12 @@ def loadModel():
                 network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             i+=1
     print("### Connections OK ###\n")
+<<<<<<< HEAD
 
 
+=======
+    
+>>>>>>> 579542c7d162d54906d6074fb34bbd5f94508307
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
 
@@ -100,15 +106,15 @@ b.grid(column=0, row=0)
 b = tk.Button(mainMenu, text="Display network", command=lambda: network.displayGraph(),width=25)
 b.grid(column=0, row=1)
 
-b = tk.Button(mainMenu, text="Display connections", command=lambda: network.displayConnections(),width=25)
+b = tk.Button(mainMenu, text="Display connections", command=lambda: network.displayConnections(),width=25)  # Useful to debug
 b.grid(column=0, row=2)
 
-txt = tk.Entry(mainMenu,width=25)
+txt = tk.Entry(mainMenu,width=25)       # Useful to debug
 txt.insert(END, "Enter compartment name")
 txt.grid(column=1, row=3)
 
 
-b = tk.Button(mainMenu, text="PrintCompParamAndType", command=lambda: network.printAttrType(txt.get()),width=25)
+b = tk.Button(mainMenu, text="Print compartiments' parameters and type", command=lambda: network.printAttrType(txt.get()),width=45) # Useful to debug
 b.grid(column=0, row=3)
 
 
@@ -126,6 +132,7 @@ b.grid(column=0, row = 6)
 
 b = tk.Button(paramMenu, text="Add injection", command=lambda: network.getInjectionCreationWindow())
 b.grid(column=0, row = 7)
+
 #--------------Run menu widgets-------------------
 
 b = tk.Button(runMenu, text="Run sim", command=lambda: network.getResults(),width=25)

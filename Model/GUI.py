@@ -20,7 +20,7 @@ import os
 
 class NetworkGUI:
 
-    #---------------Display Compartements Parameters-----------------------
+    #---------------Display Compartement Parameters-----------------------
     def displayCompParam(self,window):
 
         i = 0
@@ -83,7 +83,7 @@ class NetworkGUI:
             attrB.trace("w", lambda name, index, mode,attr=attr, attrB=attrB: callback(attr, attrB))
 
 
-            if isinstance(value, list) and len(value) > 0 and attr == "connections": #Si liste de connection
+            if isinstance(value, list) and len(value) > 0 and attr == "connections": #If connection liste
                 for c in value:
 
 
@@ -262,7 +262,7 @@ class NetworkGUI:
 
 
 
-    #---------------Display Compartements Variables for Recorders  /!\ -----------------------
+    #---------------Display Compartement Variables for Recorders  /!\ -----------------------
 
     def displayCompVar(self):
         window = Tk()
@@ -278,7 +278,7 @@ class NetworkGUI:
         window.destroy()
         print(self.results)
 
-    #-----------Display window for the creation new compartment/connection------------
+    #-----------Display window for the creation of new compartment/connection------------
 
     def addObjToModel(self, network):
 

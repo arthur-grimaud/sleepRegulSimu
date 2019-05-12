@@ -267,7 +267,7 @@ class NeuronalPopulation :
 
         print('NeuronalPopulation object: ', self.name, ' created')
 
-    #-----------------------------------??------------------------------------#
+    #-----------------------------------Next step------------------------------------#
 
     def setNextSubStepRK4(self,dt,N,coef):
         self.F[N+1] = self.F[0] + coef * dt * self.getFR(N)
@@ -348,12 +348,12 @@ class NeuronalPopulation :
         return string
 
 
-########################HOMEOSTATICSLEEPDRIVE############################
-#   .                                                                   #
+########################HOMEOSTATIC SLEEP DRIVE##########################
+#                                                                       #
 #########################################################################
 
 class HomeostaticSleepDrive:
-    # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle ??
+    # creation of the class HomeostaticSleepDrive using the dictionnary cycles  => création objet cycle 
 
     def __init__(self, myCycle):
         self.name = "HSD"
