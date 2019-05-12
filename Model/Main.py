@@ -1,6 +1,9 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+# 05/12/19
+# Authors: Darnige Eden / Grimaud Arthur / Amelie Gruel / Alexia Kuntz
+
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -19,6 +22,7 @@ network = Network()
 def loadModel():
     global network
 
+
     pop,cycle,sim,conn=read_parameters(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("text files","*.txt"),("all files","*.*"))))
     network = Network(sim)
 
@@ -29,9 +33,6 @@ def loadModel():
     for key in cycle.keys():
         network.addHSD(cycle[key])
     print("### Homeostatic Sleep Drive OK ###\n")
-
-    # for key in cycle.keys():
-    #     network.addNP(conn[key])
 
     for pop_ext in conn.keys() :
         i = 0
@@ -45,8 +46,6 @@ def loadModel():
             i+=1
     print("### Connections OK ###\n")
 
-    # network.compartments["NREM"].connections[0].addInjE(Injection(200,10000,0.5,2.5))
-    # network.injections.append(network.compartments["NREM"].connections[0].inj)
 
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
@@ -139,7 +138,6 @@ b.grid(row=2)
 b = tk.Button(visuMenu, text="Visualize the results from the simulation", command=lambda: GraphFromSim(network.results,network.fileHeader()),width=75).grid(column=0, row=0)
 b = tk.Button(visuMenu, text="Visualize precedent results", command=lambda: GraphFromCSV(filedialog.askopenfilename(initialdir = os.getcwd(),title = "Select file",filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0, row=1)
 b = tk.Button(visuMenu, text="Visualize a mean graph from multiple results", command=lambda: createMeanGraphs(filedialog.askopenfilenames(initialdir = os.getcwd(),title = "Select files", filetypes = (("CSV files","*.csv"),("all files","*.*")))),width=75).grid(column=0,row=2)
-b = tk.Button(visuMenu, text="Compare with a control", command=lambda: compareWithControl(),width=75).grid(column=0,row=3)
 
 #--------------Statistics menu widgets-------------------
 

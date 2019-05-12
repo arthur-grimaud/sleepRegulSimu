@@ -1,6 +1,10 @@
 #!bin/python
 #-*-coding:utf-8-*-
 
+# 05/12/19
+# Authors: Darnige Eden / Grimaud Arthur / Amelie Gruel / Alexia Kuntz
+
+
 #######################IMPORTATIONS########################
 
 #Calculation
@@ -152,6 +156,7 @@ class NetworkGUI:
 
         def callbackres(res):
             self.res = float(res.get())
+            self.dt = 1E3/self.res
             print (res.get())
 
         def callbackSaveRate(saveRate):
@@ -308,7 +313,7 @@ class NetworkGUI:
             lbl = Label(frame, text="tau_pop").grid(column=0, row=6)
             ety = Entry(frame, width=10).grid(column=1, row=6)
 
-            lbl = Label(frame, text="concentration").grid(column=0, row=7)
+            lbl = Label(frame, text="neurotransmitter").grid(column=0, row=7)
             ety = Entry(frame, width=10).grid(column=1, row=7)
 
             lbl = Label(frame, text="gamma").grid(column=0, row=8)
@@ -317,7 +322,10 @@ class NetworkGUI:
             lbl = Label(frame, text="tau_NT").grid(column=0, row=9)
             ety = Entry(frame, width=10).grid(column=1, row=9)
 
-            b = Button(frame, text="Create", command=lambda: self.readAndCreateComp(frame, window, "NP"),width=25).grid(column=0, row=10)
+            lbl = Label(frame, text="promoting").grid(column=0, row=10)
+            ety = Entry(frame, width=10).grid(column=1, row=10)
+
+            b = Button(frame, text="Create", command=lambda: self.readAndCreateComp(frame, window, "NP"),width=25).grid(column=0, row=11)
 
         if selection == "Homeostatic Sleep Drive":
 
