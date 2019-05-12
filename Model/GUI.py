@@ -9,7 +9,7 @@ import numpy as np ### not necessary
 from tkinter import *
 from tkinter import filedialog
 #Graph generation
-# from graphviz import Digraph
+from graphviz import Digraph
 
 from functools import partial
 import os
@@ -473,20 +473,20 @@ class NetworkGUI:
 
     #------------------------------Graph generation-----------------------------------------
 
-    # def displayGraph(self):
-    #     dot = Digraph()
+    def displayGraph(self):
+        dot = Digraph()
 
-    #     for cName in self.compartments .keys():
-    #         dot.node(str(cName),str(cName))
+        for cName in self.compartments .keys():
+            dot.node(str(cName),str(cName))
 
-    #     for cObj in self.compartments .values():
-    #         for conn in cObj.connections:
-    #                 if conn.weight < 0:
-    #                     dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
-    #                 if conn.weight >= 0:
-    #                     dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
+        for cObj in self.compartments .values():
+            for conn in cObj.connections:
+                    if conn.weight < 0:
+                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false',arrowhead='tee')
+                    if conn.weight >= 0:
+                        dot.edge(str(conn.source.name),str(conn.target.name), constraint='true',directed='false')
 
-    #     dot.render('test-output.gv', view=True)
+        dot.render('Network-Graph.gv', view=True)
 
 
     #------------------------------Save the results-----------------------------------------
