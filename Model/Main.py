@@ -47,12 +47,7 @@ def loadModel():
                 network.addNPConnection("NP-NP",pop_source,pop_ext,pop[pop_ext]["g_NT_pop_list"][i])
             i+=1
     print("### Connections OK ###\n")
-<<<<<<< HEAD
 
-
-=======
-    
->>>>>>> 579542c7d162d54906d6074fb34bbd5f94508307
     network.getSimParamFrame(runMenu).grid(column = 0, row = 1)
 
 
